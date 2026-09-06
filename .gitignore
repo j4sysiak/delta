@@ -1,0 +1,30 @@
+# Pliki i foldery generowane przez IDE
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+nbproject/
+build/
+out/
+.gradle/
+
+# Pliki systemowe
+.DS_Store
+Thumbs.db
+
+# Pliki log�w i inne artefakty
+*.log
+system-info.txt
+/gradle/wrapper/gradle-wrapper.jar
+/gradle/wrapper/gradle-wrapper.properties
+/gradlew
+/gradlew.bat
+
+transakcje.csv
+tmp/
+db/smartfin_file.mv.db
+db/smartfin_file.trace.db
+
+# Dane PostgreSQL (wolumen docker-compose)
+postgres_data/
