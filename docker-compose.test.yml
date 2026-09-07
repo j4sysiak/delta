@@ -1,0 +1,17 @@
+services:
+  postgres-test:
+    image: postgres:16
+    container_name: delta-postgres-test
+    environment:
+      POSTGRES_DB: delta_test
+      POSTGRES_USER: delta
+      POSTGRES_PASSWORD: delta
+    ports:
+      - "5433:5432"
+    tmpfs:
+      - /var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U delta -d delta_test"]
+      interval: 5s
+      timeout: 5s
+      retries: 10

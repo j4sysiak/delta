@@ -1,0 +1,20 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: delta-postgres
+    environment:
+      POSTGRES_DB: delta
+      POSTGRES_USER: delta
+      POSTGRES_PASSWORD: delta
+    ports:
+      - "5432:5432"
+    volumes:
+      - delta_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U delta -d delta"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  delta_postgres_data:
