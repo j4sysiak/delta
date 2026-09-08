@@ -1,15 +1,15 @@
 package com.delta.bank
 
+import com.delta.bank.bootstrap.DeltaApplication
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.context.ApplicationContext
+import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.ContextConfiguration
 import org.springframework.test.context.DynamicPropertyRegistry
 import org.springframework.test.context.DynamicPropertySource
 import spock.lang.Specification
-
-import com.delta.bank.bootstrap.DeltaApplication
 
 @SpringBootTest(classes = DeltaApplication)
 @ContextConfiguration(classes = DeltaApplication)
@@ -23,8 +23,13 @@ abstract class BaseIntegrationSpec extends Specification {
 
     @Autowired
     ApplicationContext applicationContext
+
     @Autowired
-    org.springframework.context.ConfigurableApplicationContext configurableApplicationContext
+    JdbcTemplate jdbcTemplate
+
+    def setup() {
+        jdbcTemplate.execute('TRUNCATE TABLE bank_accounts RESTART IDENTITY CASCADE')
+    }
 
     @DynamicPropertySource
     static void configureDataSource(DynamicPropertyRegistry registry) {

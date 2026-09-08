@@ -123,7 +123,7 @@ tasks.withType(Test).configureEach {
 
 ## Database migration
 
-### `src/main/resources/db/migration/V1__init.sql`
+### `src/main/resources/db/migration/V1__init_accounts.sql`
 
 ```sql
 create table bank_accounts (

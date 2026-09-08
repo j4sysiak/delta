@@ -1,0 +1,9 @@
+CREATE TABLE bank_transactions (
+id BIGSERIAL PRIMARY KEY,
+account_number VARCHAR(64) NOT NULL,
+type VARCHAR(32) NOT NULL,
+amount NUMERIC(19,2) NOT NULL,
+currency VARCHAR(3) NOT NULL,
+description VARCHAR(255),
+created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
