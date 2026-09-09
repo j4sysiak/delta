@@ -21,7 +21,7 @@ public class BankAccountController {
         this.service = service;
     }
 
-    @Operation(summary = "Create a bank account")
+    @Operation(summary = "Create bank account")
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public AccountResponse createAccount(@Valid @RequestBody CreateAccountRequest request) {
@@ -40,7 +40,7 @@ public class BankAccountController {
         );
     }
 
-    @Operation(summary = "Read bank account using number")
+    @Operation(summary = "Read account by number")
     @GetMapping("/{number}")
     public AccountResponse getAccount(@PathVariable String number) {
         BankAccountEntity entity = service.find(number);
@@ -53,7 +53,7 @@ public class BankAccountController {
         );
     }
 
-    @Operation(summary = "Create a deposit transaction for a bank account")
+    @Operation(summary = "Deposit funds")
     @PostMapping("/{number}/deposit")
     public AccountResponse deposit(@PathVariable String number, @Valid @RequestBody DepositRequest request) {
         BankAccountEntity entity = service.deposit(number, new BigDecimal(request.amount()));
@@ -66,7 +66,7 @@ public class BankAccountController {
         );
     }
 
-    @Operation(summary = "Create a withdraw transaction for a bank account")
+    @Operation(summary = "Withdraw funds")
     @PostMapping("/{number}/withdraw")
     public AccountResponse withdraw(@PathVariable String number, @Valid @RequestBody WithdrawRequest request) {
         BankAccountEntity entity = service.withdraw(number, new BigDecimal(request.amount()));
@@ -79,7 +79,7 @@ public class BankAccountController {
         );
     }
 
-    @Operation(summary = "Create a transfer transaction between bank accounts")
+    @Operation(summary = "Transfer funds between accounts")
     @PostMapping("/transfer")
     public void transfer(@Valid @RequestBody TransferRequest request) {
         service.transfer(

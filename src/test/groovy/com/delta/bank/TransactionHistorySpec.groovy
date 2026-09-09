@@ -1,25 +1,31 @@
 package com.delta.bank
 
 import com.delta.bank.application.BankAccountService
+import com.delta.bank.domain.AccountTransactionRepository
+import com.delta.bank.domain.TransactionType
 import org.springframework.beans.factory.annotation.Autowired
-import spock.lang.Specification
-
-import java.math.BigDecimal
 
 class TransactionHistorySpec extends BaseIntegrationSpec {
 
     @Autowired
-    BankAccountService bankAccountService
+    BankAccountService service
 
-    def "stores account operations in transaction history"() {
+    @Autowired
+    AccountTransactionRepository transactionRepository
+
+    def "stores deposit and withdrawal events for account"() {
         given:
-        bankAccountService.openAccount('PLN-2001', 'Alice', new BigDecimal('1000.00'), 'PLN')
+        service.openAccount('PLN-5001', 'Alice', new BigDecimal('1000.00'), 'PLN')
 
         when:
-        bankAccountService.deposit('PLN-2001', new BigDecimal('250.00'))
-        bankAccountService.withdraw('PLN-2001', new BigDecimal('100.00'))
+        service.deposit('PLN-5001', new BigDecimal('250.00'))
+        service.withdraw('PLN-5001', new BigDecimal('100.00'))
 
         then:
-        bankAccountService.find('PLN-2001').balance == new BigDecimal('1150.00')
+        def transactions = transactionRepository.findByAccountNumberOrderByCreatedAtDesc('PLN-5001')
+        transactions.size() == 3
+        transactions[0].type == TransactionType.WITHDRAW
+        transactions[1].type == TransactionType.DEPOSIT
+        transactions[2].type == TransactionType.DEPOSIT
     }
 }

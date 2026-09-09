@@ -43,4 +43,42 @@ class BankAccountBusinessSpec extends BaseIntegrationSpec {
         service.find('PLN-1003').balance == new BigDecimal('850.00')
         service.find('PLN-1004').balance == new BigDecimal('400.00')
     }
+
+    def "transfer rejects same account"() {
+        given:
+        service.openAccount('PLN-2001', 'Alice', new BigDecimal('1000.00'), 'PLN')
+
+        when:
+        service.transfer('PLN-2001', 'PLN-2001', new BigDecimal('100.00'))
+
+        then:
+        IllegalArgumentException ex = thrown()
+        ex.message == 'Cannot transfer to the same account'
+    }
+
+    def "transfer rejects currency mismatch"() {
+        given:
+        service.openAccount('PLN-2002', 'Alice', new BigDecimal('1000.00'), 'PLN')
+        service.openAccount('EUR-2003', 'Bob', new BigDecimal('1000.00'), 'EUR')
+
+        when:
+        service.transfer('PLN-2002', 'EUR-2003', new BigDecimal('100.00'))
+
+        then:
+        IllegalArgumentException ex = thrown()
+        ex.message == 'Currency mismatch between accounts'
+    }
+
+    def "transfer rejects when funds are insufficient"() {
+        given:
+        service.openAccount('PLN-2004', 'Alice', new BigDecimal('50.00'), 'PLN')
+        service.openAccount('PLN-2005', 'Bob', new BigDecimal('50.00'), 'PLN')
+
+        when:
+        service.transfer('PLN-2004', 'PLN-2005', new BigDecimal('100.00'))
+
+        then:
+        IllegalStateException ex = thrown()
+        ex.message == 'Insufficient funds for transfer'
+    }
 }

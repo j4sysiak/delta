@@ -28,6 +28,7 @@ abstract class BaseIntegrationSpec extends Specification {
     JdbcTemplate jdbcTemplate
 
     def setup() {
+        jdbcTemplate.execute('TRUNCATE TABLE bank_transactions RESTART IDENTITY CASCADE')
         jdbcTemplate.execute('TRUNCATE TABLE bank_accounts RESTART IDENTITY CASCADE')
     }
 
