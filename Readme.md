@@ -192,6 +192,40 @@ docker compose -f docker-compose.test.yml up -d
 ./gradlew test
 ```
 
+### Zatrzymywanie instancji (produkcja i test)
+
+Jeżeli Spring Boot nie startuje, a port 8080 jest zajęty, sprawdź, który proces go blokuje:
+
+```powershell
+netstat -ano | findstr :8080
+```
+
+Następnie zabij konkretny PID:
+
+```powershell
+taskkill /PID <PID> /F
+```
+
+Jeśli chcesz sprawdzić port testowy 5433:
+
+```powershell
+netstat -ano | findstr :5433
+```
+
+I zatrzymać kontener testowy:
+
+```powershell
+docker compose -f docker-compose.test.yml down
+```
+
+Jeżeli potrzebujesz zatrzymać produkcyjną bazę PostgreSQL i przypadkowo w tle działa Spring Boot:
+
+```powershell
+netstat -ano | findstr :8080
+netstat -ano | findstr :5432
+docker compose down
+```
+
 ### Zatrzymanie testowej bazy
 
 ```bash
@@ -239,6 +273,82 @@ Ctrl+C
 ```bash
 docker compose down
 ```
+
+## Debug checklist
+
+### `JAVA_HOME invalid`
+
+```powershell
+$env:JAVA_HOME = "C:\devtools\jdk-21.0.12.1+1"
+$env:PATH = "$env:JAVA_HOME\bin;$env:PATH"
+java -version
+```
+
+Jeśli `JAVA_HOME` jest niepoprawne, Gradle i Spring Boot nie uruchomią się.
+
+### `Port 8080 already in use`
+
+```powershell
+netstat -ano | findstr :8080
+taskkill /PID <PID> /F
+```
+
+To oznacza, że inna aplikacja lub poprzednia instancja Spring Boot nadal działa.
+
+### `FlywayValidateException`
+
+Zwykle oznacza, że historia migracji w bazie jest zanieczyszczona lub checksum się nie zgadza.
+
+```powershell
+docker compose down -v
+docker compose -f docker-compose.test.yml down -v
+```
+
+Jeśli nadal problem występuje, zresetuj schemat bazy:
+
+```powershell
+docker exec delta-postgres-test psql -U delta -d delta_test -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public;"
+docker exec delta-postgres psql -U delta -d delta -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public;"
+```
+
+### `No such file or directory` przy Dockerze
+
+To zwykle oznacza, że kontener nie zdążył się jeszcze uruchomić.
+
+```powershell
+docker compose up -d
+Start-Sleep -Seconds 5
+docker ps
+```
+
+LUB sprawdź, czy kontener istnieje:
+
+```powershell
+docker ps -a
+```
+
+## Swagger / OpenAPI
+
+Projekt może wystawiać dokumentację API przez Swagger UI.
+
+### Dodanie zależności
+
+```groovy
+implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.5'
+```
+
+> Wersja `2.8.x` jest kompatybilna z Spring Boot 3.4.x i Spring 6.2.x.
+
+### Adresy po uruchomieniu aplikacji
+
+- Swagger UI: `http://localhost:8080/swagger-ui/index.html`
+- OpenAPI JSON: `http://localhost:8080/v3/api-docs`
+
+### Uwagi
+
+- Swagger jest przydatny do lokalnego testowania i nauki REST API.
+- Nie wystawiaj publicznie Swagger UI bez zabezpieczeń w środowisku produkcyjnym.
+- Jeżeli pojawia się błąd typu `NoSuchMethodError` lub `ControllerAdviceBean`, najczęściej oznacza to niezgodność wersji Spring / springdoc.
 
 ## Uwagi o testach Spock + Spring
 
