@@ -1,11 +1,9 @@
 package com.delta.bank.api;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Positive;
 
 public record DepositRequest(
-        @NotBlank
-        @Pattern(regexp = "^[0-9]+(\\.[0-9]{2})?$")
+        @Positive(message = "Deposit amount must be greater than zero")
         String amount
 ) {
 }

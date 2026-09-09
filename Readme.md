@@ -198,6 +198,34 @@ docker compose -f docker-compose.test.yml up -d
 docker compose -f docker-compose.test.yml down
 ```
 
+### Czyszczenie baz i reset Flyway
+
+Jeśli w bazie testowej lub produkcyjnej zostaną zapisane stare migracje i pojawi się błąd typu `FlywayValidateException`, wykonaj reset środowiska:
+
+```bash
+# produkcja
+docker compose down -v
+
+# testy
+docker compose -f docker-compose.test.yml down -v
+```
+
+Jeśli testowa baza nadal ma stare dane po resecie, można ją odtworzyć od zera:
+
+```bash
+docker rm -f delta-postgres-test
+docker compose -f docker-compose.test.yml up -d --force-recreate --remove-orphans
+```
+
+Jeżeli chcesz wyczyścić bazę ręcznie na poziomie PostgreSQL:
+
+```bash
+docker exec delta-postgres-test psql -U delta -d delta_test -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public;"
+docker exec delta-postgres psql -U delta -d delta -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public;"
+```
+
+Uwaga: to usunie dane i zresetuje historię migracji Flyway.
+
 ### Zatrzymanie produkcji
 
 1. Zatrzymaj aplikację Spring Boot:

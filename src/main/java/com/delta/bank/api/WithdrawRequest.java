@@ -1,11 +1,9 @@
 package com.delta.bank.api;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Positive;
 
 public record WithdrawRequest(
-        @NotBlank
-        @Pattern(regexp = "^[0-9]+(\\.[0-9]{2})?$")
+        @Positive(message = "Withdrawal amount must be greater than zero")
         String amount
 ) {
 }
