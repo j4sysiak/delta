@@ -255,6 +255,8 @@ Jeżeli chcesz wyczyścić bazę ręcznie na poziomie PostgreSQL:
 
 ```bash
 docker exec delta-postgres-test psql -U delta -d delta_test -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public;"
+
+Uwaga to wyczyści wszystkie dane w bazie produkcyjnej i zresetuje historię migracji Flyway.
 docker exec delta-postgres psql -U delta -d delta -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public;"
 ```
 

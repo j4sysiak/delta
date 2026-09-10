@@ -1,0 +1,2 @@
+ALTER TABLE bank_accounts
+    ADD COLUMN version BIGINT NOT NULL DEFAULT 0;

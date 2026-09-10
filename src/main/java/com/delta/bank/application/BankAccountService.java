@@ -22,6 +22,7 @@ public class BankAccountService {
         this.transactionRepository = transactionRepository;
     }
 
+    // Warto dodać @Transactional — dla Optimistic Locking: @Transactional + @Version działa razem.
     @Transactional
     public BankAccountEntity openAccount(String number, String owner, BigDecimal balance, String currency) {
         validate(number, owner, balance, currency);
@@ -43,6 +44,7 @@ public class BankAccountService {
         return account;
     }
 
+    // Warto dodać @Transactional — dla Optimistic Locking: @Transactional + @Version działa razem.
     @Transactional
     public BankAccountEntity deposit(String number, BigDecimal amount) {
         validateAmount(amount);
@@ -64,6 +66,7 @@ public class BankAccountService {
         return account;
     }
 
+    // Warto dodać @Transactional — dla Optimistic Locking: @Transactional + @Version działa razem.
     @Transactional
     public BankAccountEntity withdraw(String number, BigDecimal amount) {
         validateAmount(amount);
@@ -89,6 +92,7 @@ public class BankAccountService {
         return account;
     }
 
+    // Warto dodać @Transactional — dla Optimistic Locking: @Transactional + @Version działa razem.
     @Transactional
     public void transfer(String fromNumber, String toNumber, BigDecimal amount) {
         validateAmount(amount);

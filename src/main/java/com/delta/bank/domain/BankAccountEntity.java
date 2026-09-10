@@ -1,10 +1,6 @@
 package com.delta.bank.domain;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-
+import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.util.Objects;
 
@@ -24,6 +20,10 @@ public class BankAccountEntity {
 
     @Column(nullable = false, length = 3)
     private String currency;
+
+    @Version
+    @Column(nullable = false)
+    private Long version;
 
     protected BankAccountEntity() {
     }
@@ -57,5 +57,9 @@ public class BankAccountEntity {
 
     public void setCurrency(String currency) {
         this.currency = currency;
+    }
+
+    public Long getVersion() {
+        return version;
     }
 }
