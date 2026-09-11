@@ -47,6 +47,54 @@ public class BankAccountService {
     }
 
     // Warto dodać @Transactional — dla Optimistic Locking: @Transactional + @Version działa razem.
+    @Transactional
+    public BankAccountEntity deposit(String number, BigDecimal amount) {
+        validateAmount(amount);
+
+        BankAccountEntity account = repository.findById(number)
+                .orElseThrow(() -> new IllegalArgumentException("Account not found: " + number));
+
+        account.setBalance(account.getBalance().add(amount));
+        repository.save(account);
+
+        transactionRepository.save(new AccountTransactionEntity(
+                account.getNumber(),
+                TransactionType.DEPOSIT,
+                amount,
+                account.getCurrency(),
+                "Deposit"
+        ));
+
+        return account;
+    }
+
+    // Warto dodać @Transactional — dla Optimistic Locking: @Transactional + @Version działa razem.
+    @Transactional
+    public BankAccountEntity withdraw(String number, BigDecimal amount) {
+        validateAmount(amount);
+
+        BankAccountEntity account = repository.findById(number)
+                .orElseThrow(() -> new IllegalArgumentException("Account not found: " + number));
+
+        if (account.getBalance().compareTo(amount) < 0) {
+            throw new IllegalStateException("Insufficient funds");
+        }
+
+        account.setBalance(account.getBalance().subtract(amount));
+        repository.save(account);
+
+        transactionRepository.save(new AccountTransactionEntity(
+                account.getNumber(),
+                TransactionType.WITHDRAW,
+                amount,
+                account.getCurrency(),
+                "Withdrawal"
+        ));
+
+        return account;
+    }
+
+    // Warto dodać @Transactional — dla Optimistic Locking: @Transactional + @Version działa razem.
     // W tej operacji używamy dodatkowo oprócz Optimistic Locking także PESSIMISTIC_WRITE lock (FOR UPDATE)
     // w repository.findAllForUpdateOrderByNumber(orderedNumbers)
     @Transactional
@@ -65,7 +113,14 @@ public class BankAccountService {
         Ten fragment:
         1. wywołuje repository.findAllForUpdateOrderByNumber(orderedNumbers)
         2. pobiera konta dla numerów z orderedNumbers
-        3. zakłada na nich blokadę na czas transakcji (FOR UPDATE)
+
+        clue:
+        -----
+        3. zakłada na nich blokadę na czas transakcji (FOR UPDATE):
+        w repository.findAllForUpdateOrderByNumber(orderedNumbers) jest użyty @Lock(LockModeType.PESSIMISTIC_WRITE)
+              - dzięki temu nie będzie problemu z równoczesnym transferem na te same konta
+              - dzięki temu nie będzie problemu z równoczesnym transferem z tych samych kont
+
         4. sortuje/pobiera je w ustalonej kolejności, żeby zmniejszyć ryzyko deadlocków
         5. zamienia wynik na Map<String, BankAccountEntity>, gdzie:
               - kluczem jest numer konta (BankAccountEntity::getNumber)
@@ -118,54 +173,6 @@ public class BankAccountService {
                 to.getCurrency(),
                 "Transfer from " + from.getNumber()
         ));
-    }
-
-    // Warto dodać @Transactional — dla Optimistic Locking: @Transactional + @Version działa razem.
-    @Transactional
-    public BankAccountEntity deposit(String number, BigDecimal amount) {
-        validateAmount(amount);
-
-        BankAccountEntity account = repository.findById(number)
-                .orElseThrow(() -> new IllegalArgumentException("Account not found: " + number));
-
-        account.setBalance(account.getBalance().add(amount));
-        repository.save(account);
-
-        transactionRepository.save(new AccountTransactionEntity(
-                account.getNumber(),
-                TransactionType.DEPOSIT,
-                amount,
-                account.getCurrency(),
-                "Deposit"
-        ));
-
-        return account;
-    }
-
-    // Warto dodać @Transactional — dla Optimistic Locking: @Transactional + @Version działa razem.
-    @Transactional
-    public BankAccountEntity withdraw(String number, BigDecimal amount) {
-        validateAmount(amount);
-
-        BankAccountEntity account = repository.findById(number)
-                .orElseThrow(() -> new IllegalArgumentException("Account not found: " + number));
-
-        if (account.getBalance().compareTo(amount) < 0) {
-            throw new IllegalStateException("Insufficient funds");
-        }
-
-        account.setBalance(account.getBalance().subtract(amount));
-        repository.save(account);
-
-        transactionRepository.save(new AccountTransactionEntity(
-                account.getNumber(),
-                TransactionType.WITHDRAW,
-                amount,
-                account.getCurrency(),
-                "Withdrawal"
-        ));
-
-        return account;
     }
 
     @Transactional(readOnly = true)

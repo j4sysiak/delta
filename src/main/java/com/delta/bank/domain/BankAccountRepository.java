@@ -11,12 +11,13 @@ import java.util.List;
 
 public interface BankAccountRepository extends JpaRepository<BankAccountEntity, String> {
 
+    // Blokuje wybrane konta do zapisu i zwraca je w deterministycznej kolejności po numerze.
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("""
-        select a
-        from BankAccountEntity a
-        where a.number in :numbers
-        order by a.number
-        """)
+    select a
+    from BankAccountEntity a
+    where a.number in :numbers
+    order by a.number
+    """)
     List<BankAccountEntity> findAllForUpdateOrderByNumber(@Param("numbers") Collection<String> numbers);
 }
