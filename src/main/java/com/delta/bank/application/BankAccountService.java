@@ -1,6 +1,5 @@
 package com.delta.bank.application;
 
-
 import com.delta.bank.domain.AccountTransactionEntity;
 import com.delta.bank.domain.AccountTransactionRepository;
 import com.delta.bank.domain.BankAccountEntity;
@@ -10,6 +9,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class BankAccountService {
@@ -42,6 +44,80 @@ public class BankAccountService {
         ));
 
         return account;
+    }
+
+    // Warto dodać @Transactional — dla Optimistic Locking: @Transactional + @Version działa razem.
+    // W tej operacji używamy dodatkowo oprócz Optimistic Locking także PESSIMISTIC_WRITE lock (FOR UPDATE)
+    // w repository.findAllForUpdateOrderByNumber(orderedNumbers)
+    @Transactional
+    public void transfer(String fromNumber, String toNumber, BigDecimal amount) {
+        validateAmount(amount);
+
+        if (fromNumber.equals(toNumber)) {
+            throw new IllegalArgumentException("Cannot transfer to the same account");
+        }
+
+        List<String> orderedNumbers = List.of(fromNumber, toNumber).stream()
+                .sorted()
+                .toList();
+
+        /*
+        Ten fragment:
+        1. wywołuje repository.findAllForUpdateOrderByNumber(orderedNumbers)
+        2. pobiera konta dla numerów z orderedNumbers
+        3. zakłada na nich blokadę na czas transakcji (FOR UPDATE)
+        4. sortuje/pobiera je w ustalonej kolejności, żeby zmniejszyć ryzyko deadlocków
+        5. zamienia wynik na Map<String, BankAccountEntity>, gdzie:
+              - kluczem jest numer konta (BankAccountEntity::getNumber)
+              - wartością jest obiekt BankAccountEntity
+        * */
+        Map<String, BankAccountEntity> lockedAccounts =
+                repository.findAllForUpdateOrderByNumber(orderedNumbers).stream()
+                        .collect(Collectors.toMap(BankAccountEntity::getNumber, account -> account));
+
+        // lockedAccounts.get(fromNumber) daje zablokowane konto źródłowe
+        BankAccountEntity from = lockedAccounts.get(fromNumber);
+
+        if (from == null) {
+            throw new IllegalArgumentException("Source account not found: " + fromNumber);
+        }
+
+        // lockedAccounts.get(toNumber) daje zablokowane konto docelowe.
+        BankAccountEntity to = lockedAccounts.get(toNumber);
+
+        if (to == null) {
+            throw new IllegalArgumentException("Destination account not found: " + toNumber);
+        }
+
+        if (!from.getCurrency().equals(to.getCurrency())) {
+            throw new IllegalArgumentException("Currency mismatch between accounts");
+        }
+
+        if (from.getBalance().compareTo(amount) < 0) {
+            throw new IllegalStateException("Insufficient funds for transfer");
+        }
+
+        from.setBalance(from.getBalance().subtract(amount));
+        to.setBalance(to.getBalance().add(amount));
+
+        repository.save(from);
+        repository.save(to);
+
+        transactionRepository.save(new AccountTransactionEntity(
+                from.getNumber(),
+                TransactionType.TRANSFER_OUT,
+                amount,
+                from.getCurrency(),
+                "Transfer to " + to.getNumber()
+        ));
+
+        transactionRepository.save(new AccountTransactionEntity(
+                to.getNumber(),
+                TransactionType.TRANSFER_IN,
+                amount,
+                to.getCurrency(),
+                "Transfer from " + from.getNumber()
+        ));
     }
 
     // Warto dodać @Transactional — dla Optimistic Locking: @Transactional + @Version działa razem.
@@ -90,52 +166,6 @@ public class BankAccountService {
         ));
 
         return account;
-    }
-
-    // Warto dodać @Transactional — dla Optimistic Locking: @Transactional + @Version działa razem.
-    @Transactional
-    public void transfer(String fromNumber, String toNumber, BigDecimal amount) {
-        validateAmount(amount);
-
-        if (fromNumber.equals(toNumber)) {
-            throw new IllegalArgumentException("Cannot transfer to the same account");
-        }
-
-        BankAccountEntity from = repository.findById(fromNumber)
-                .orElseThrow(() -> new IllegalArgumentException("Source account not found: " + fromNumber));
-
-        BankAccountEntity to = repository.findById(toNumber)
-                .orElseThrow(() -> new IllegalArgumentException("Destination account not found: " + toNumber));
-
-        if (!from.getCurrency().equals(to.getCurrency())) {
-            throw new IllegalArgumentException("Currency mismatch between accounts");
-        }
-
-        if (from.getBalance().compareTo(amount) < 0) {
-            throw new IllegalStateException("Insufficient funds for transfer");
-        }
-
-        from.setBalance(from.getBalance().subtract(amount));
-        to.setBalance(to.getBalance().add(amount));
-
-        repository.save(from);
-        repository.save(to);
-
-        transactionRepository.save(new AccountTransactionEntity(
-                from.getNumber(),
-                TransactionType.TRANSFER_OUT,
-                amount,
-                from.getCurrency(),
-                "Transfer to " + to.getNumber()
-        ));
-
-        transactionRepository.save(new AccountTransactionEntity(
-                to.getNumber(),
-                TransactionType.TRANSFER_IN,
-                amount,
-                to.getCurrency(),
-                "Transfer from " + from.getNumber()
-        ));
     }
 
     @Transactional(readOnly = true)
