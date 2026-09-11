@@ -9,6 +9,34 @@ import java.util.concurrent.TimeUnit
 
 class ConcurrentTransferPessimisticSpec extends BaseIntegrationSpec {
 
+
+    /*
+    test sprawdza, że nie ma utraty pieniędzy
+      1. i że dokładnie jedna operacja nie przechodzi,
+         a nie konkretny numer salda, bo kolejność jest niedeterministyczna
+
+         To znaczy, że test nie sprawdza dokładnego końcowego salda każdego konta osobno**,
+         bo przy współbieżności nie da się przewidzieć, który przelew wykona się pierwszy.
+
+         W tym przypadku:
+
+        - są 2 równoległe przelewy: `800.00` i `500.00`
+        - konto źródłowe ma tylko `1000.00`
+        - więc **jeden przelew się powiedzie**, a **drugi powinien zostać odrzucony**
+        - ale ponieważ kolejność wykonania wątków jest **niedeterministyczna**, nie zakłada się z góry, który z nich przegra
+
+        Dlatego test sprawdza tylko, że:
+
+            - **suma pieniędzy się zgadza** \(`source + target == 1000\.00`\)
+            - **dokładnie jedna operacja zakończyła się błędem** \(`failures.size\(\) == 1`\)
+
+        Czyli: test weryfikuje **własność biznesową**, a nie konkretny scenariusz kolejności wykonania.
+
+     Dodatkowo:
+      1. @Lock(PESSIMISTIC_WRITE) daje serializację
+      2. nie wywala błędu „konfliktu wersji”
+      3. tylko kolejno wykonuje transakcje i pozwala wyniki zależne od sekwencji
+    **/
     @Autowired
     BankAccountService service
 
