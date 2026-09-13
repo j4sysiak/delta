@@ -18,8 +18,8 @@ class TransactionHistorySpec extends BaseIntegrationSpec {
         service.openAccount('PLN-5001', 'Alice', new BigDecimal('1000.00'), 'PLN')
 
         when:
-        service.deposit('PLN-5001', new BigDecimal('250.00'))
-        service.withdraw('PLN-5001', new BigDecimal('100.00'))
+        service.deposit('dep-5001', 'PLN-5001', new BigDecimal('250.00'))
+        service.withdraw('wd-5001', 'PLN-5001', new BigDecimal('100.00'))
 
         then:
         def transactions = transactionRepository.findByAccountNumberOrderByCreatedAtDesc('PLN-5001')

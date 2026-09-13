@@ -28,6 +28,9 @@ public class AccountTransactionEntity {
     @Column
     private String description;
 
+    @Column(length = 64)
+    private String transferRequestId;
+
     @Column(nullable = false)
     private LocalDateTime createdAt;
 
@@ -41,6 +44,11 @@ public class AccountTransactionEntity {
         this.currency = currency;
         this.description = description;
         this.createdAt = LocalDateTime.now();
+    }
+
+    public AccountTransactionEntity(String accountNumber, TransactionType type, BigDecimal amount, String currency, String description, String transferRequestId) {
+        this(accountNumber, type, amount, currency, description);
+        this.transferRequestId = transferRequestId;
     }
 
     public Long getId() {
@@ -65,6 +73,10 @@ public class AccountTransactionEntity {
 
     public String getDescription() {
         return description;
+    }
+
+    public String getTransferRequestId() {
+        return transferRequestId;
     }
 
     public LocalDateTime getCreatedAt() {

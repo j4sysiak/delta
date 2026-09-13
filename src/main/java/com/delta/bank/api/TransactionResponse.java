@@ -12,6 +12,7 @@ public record TransactionResponse(
         BigDecimal amount,
         String currency,
         String description,
+        String transferRequestId,
         LocalDateTime createdAt
 ) {
 }

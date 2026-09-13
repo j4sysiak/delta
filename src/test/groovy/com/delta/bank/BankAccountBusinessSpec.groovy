@@ -13,7 +13,7 @@ class BankAccountBusinessSpec extends BaseIntegrationSpec {
         service.openAccount('PLN-1001', 'Alice', new BigDecimal('1000.00'), 'PLN')
 
         when:
-        def account = service.deposit('PLN-1001', new BigDecimal('250.50'))
+        def account = service.deposit('dep-1001', 'PLN-1001', new BigDecimal('250.50'))
 
         then:
         account.balance == new BigDecimal('1250.50')
@@ -24,7 +24,7 @@ class BankAccountBusinessSpec extends BaseIntegrationSpec {
         service.openAccount('PLN-1002', 'Bob', new BigDecimal('100.00'), 'PLN')
 
         when:
-        service.withdraw('PLN-1002', new BigDecimal('200.00'))
+        service.withdraw('wd-1002', 'PLN-1002', new BigDecimal('200.00'))
 
         then:
         IllegalStateException ex = thrown()
@@ -37,7 +37,7 @@ class BankAccountBusinessSpec extends BaseIntegrationSpec {
         service.openAccount('PLN-1004', 'Bob', new BigDecimal('250.00'), 'PLN')
 
         when:
-        service.transfer('PLN-1003', 'PLN-1004', new BigDecimal('150.00'))
+        service.transfer('req-1003', 'PLN-1003', 'PLN-1004', new BigDecimal('150.00'))
 
         then:
         service.find('PLN-1003').balance == new BigDecimal('850.00')
@@ -49,7 +49,7 @@ class BankAccountBusinessSpec extends BaseIntegrationSpec {
         service.openAccount('PLN-2001', 'Alice', new BigDecimal('1000.00'), 'PLN')
 
         when:
-        service.transfer('PLN-2001', 'PLN-2001', new BigDecimal('100.00'))
+        service.transfer('req-2001', 'PLN-2001', 'PLN-2001', new BigDecimal('100.00'))
 
         then:
         IllegalArgumentException ex = thrown()
@@ -62,7 +62,7 @@ class BankAccountBusinessSpec extends BaseIntegrationSpec {
         service.openAccount('EUR-2003', 'Bob', new BigDecimal('1000.00'), 'EUR')
 
         when:
-        service.transfer('PLN-2002', 'EUR-2003', new BigDecimal('100.00'))
+        service.transfer('req-2002', 'PLN-2002', 'EUR-2003', new BigDecimal('100.00'))
 
         then:
         IllegalArgumentException ex = thrown()
@@ -75,7 +75,7 @@ class BankAccountBusinessSpec extends BaseIntegrationSpec {
         service.openAccount('PLN-2005', 'Bob', new BigDecimal('50.00'), 'PLN')
 
         when:
-        service.transfer('PLN-2004', 'PLN-2005', new BigDecimal('100.00'))
+        service.transfer('req-2004', 'PLN-2004', 'PLN-2005', new BigDecimal('100.00'))
 
         then:
         IllegalStateException ex = thrown()

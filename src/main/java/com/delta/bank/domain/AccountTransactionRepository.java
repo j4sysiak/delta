@@ -6,4 +6,10 @@ import java.util.List;
 
 public interface AccountTransactionRepository extends JpaRepository<AccountTransactionEntity, Long> {
     List<AccountTransactionEntity> findByAccountNumberOrderByCreatedAtDesc(String accountNumber);
+
+    java.util.Optional<AccountTransactionEntity> findFirstByTransferRequestIdAndAccountNumberAndType(
+            String transferRequestId,
+            String accountNumber,
+            TransactionType type
+    );
 }

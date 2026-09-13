@@ -60,7 +60,7 @@ class ConcurrentTransferPessimisticSpec extends BaseIntegrationSpec {
             // komunikat wyjątku zostanie zapisany na współdzielonej liście błędów.
             start.await()
             try {
-                service.transfer('PLN-5001', 'PLN-5002', new BigDecimal('800.00'))
+                service.transfer('req-5001', 'PLN-5001', 'PLN-5002', new BigDecimal('800.00'))
             } catch (Exception e) {
                 failures << e.message
             }
@@ -72,7 +72,7 @@ class ConcurrentTransferPessimisticSpec extends BaseIntegrationSpec {
             // komunikat wyjątku zostanie zapisany na współdzielonej liście błędów.
             start.await()
             try {
-                service.transfer('PLN-5001', 'PLN-5002', new BigDecimal('500.00'))
+                service.transfer('req-5002', 'PLN-5001', 'PLN-5002', new BigDecimal('500.00'))
             } catch (Exception e) {
                 failures << e.message
             }

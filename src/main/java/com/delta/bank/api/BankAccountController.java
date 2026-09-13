@@ -55,36 +55,47 @@ public class BankAccountController {
 
     @Operation(summary = "Deposit funds")
     @PostMapping("/{number}/deposit")
-    public AccountResponse deposit(@PathVariable String number, @Valid @RequestBody DepositRequest request) {
-        BankAccountEntity entity = service.deposit(number, new BigDecimal(request.amount()));
+    public TransactionResultResponse deposit(@PathVariable String number, @Valid @RequestBody DepositRequest request) {
+        BankAccountEntity entity = service.deposit(request.requestId(), number, new BigDecimal(request.amount()));
 
-        return new AccountResponse(
+        return new TransactionResultResponse(
+                true,
+                request.requestId(),
                 entity.getNumber(),
-                entity.getOwner(),
                 entity.getBalance(),
-                entity.getCurrency()
+                new BigDecimal(request.amount())
         );
     }
 
     @Operation(summary = "Withdraw funds")
     @PostMapping("/{number}/withdraw")
-    public AccountResponse withdraw(@PathVariable String number, @Valid @RequestBody WithdrawRequest request) {
-        BankAccountEntity entity = service.withdraw(number, new BigDecimal(request.amount()));
+    public TransactionResultResponse withdraw(@PathVariable String number, @Valid @RequestBody WithdrawRequest request) {
+        BankAccountEntity entity = service.withdraw(request.requestId(), number, new BigDecimal(request.amount()));
 
-        return new AccountResponse(
+        return new TransactionResultResponse(
+                true,
+                request.requestId(),
                 entity.getNumber(),
-                entity.getOwner(),
                 entity.getBalance(),
-                entity.getCurrency()
+                new BigDecimal(request.amount())
         );
     }
 
     @Operation(summary = "Transfer funds between accounts")
     @PostMapping("/transfer")
-    public void transfer(@Valid @RequestBody TransferRequest request) {
-        service.transfer(
+    public TransactionResultResponse transfer(@Valid @RequestBody TransferRequest request) {
+        boolean executed = service.transfer(
+                request.requestId(),
                 request.fromAccount(),
                 request.toAccount(),
+                new BigDecimal(request.amount())
+        );
+
+        return new TransactionResultResponse(
+                executed,
+                request.requestId(),
+                request.fromAccount(),
+                service.find(request.fromAccount()).getBalance(),
                 new BigDecimal(request.amount())
         );
     }

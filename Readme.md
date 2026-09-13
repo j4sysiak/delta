@@ -262,6 +262,27 @@ docker exec delta-postgres psql -U delta -d delta -c "DROP SCHEMA public CASCADE
 
 Uwaga: to usunie dane i zresetuje historię migracji Flyway.
 
+### Idempotency transferów
+
+Ważne:
+
+Po takiej zmianie musisz odświeżyć bazę testową/produkcyjną, jeśli `V4` już było zastosowane:
+
+```bash
+docker compose -f docker-compose.test.yml down -v
+docker compose -f docker-compose.test.yml up -d
+./gradlew test
+```
+
+Jeśli produkcja też już dostała `V4`, to analogicznie:
+
+```bash
+docker compose down -v
+docker compose up -d
+```
+
+Jeśli chcesz, mogę teraz pójść dalej i zrobić krok 10: audyt + timestamps albo outbox/eventy.
+
 ### Zatrzymanie produkcji
 
 1. Zatrzymaj aplikację Spring Boot:

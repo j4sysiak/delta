@@ -4,6 +4,9 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Positive;
 
 public record TransferRequest(
+        @NotBlank(message = "Transfer request id is required")
+        String requestId,
+
         @NotBlank(message = "From account is required")
         String fromAccount,
 

@@ -1,6 +1,7 @@
 package com.delta.bank.api;
 
 import com.delta.bank.application.TransactionHistoryService;
+import com.delta.bank.domain.AccountTransactionEntity;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -21,8 +22,7 @@ public class TransactionController {
 
     @GetMapping("/{number}/transactions")
     public List<TransactionResponse> getTransactions(@PathVariable String number) {
-        return service.getTransactions(number)
-                .stream()
+        return service.getTransactions(number).stream()
                 .map(tx -> new TransactionResponse(
                         tx.getId(),
                         tx.getAccountNumber(),
@@ -30,6 +30,7 @@ public class TransactionController {
                         tx.getAmount(),
                         tx.getCurrency(),
                         tx.getDescription(),
+                        tx.getTransferRequestId(),
                         tx.getCreatedAt()
                 ))
                 .toList();

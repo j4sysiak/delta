@@ -48,11 +48,21 @@ public class BankAccountService {
 
     // Warto dodać @Transactional — dla Optimistic Locking: @Transactional + @Version działa razem.
     @Transactional
-    public BankAccountEntity deposit(String number, BigDecimal amount) {
+    public BankAccountEntity deposit(String requestId, String number, BigDecimal amount) {
         validateAmount(amount);
+
+        if (requestId == null || requestId.isBlank()) {
+            throw new IllegalArgumentException("Deposit request id is required");
+        }
 
         BankAccountEntity account = repository.findById(number)
                 .orElseThrow(() -> new IllegalArgumentException("Account not found: " + number));
+
+        if (transactionRepository.findFirstByTransferRequestIdAndAccountNumberAndType(
+                requestId, number, TransactionType.DEPOSIT
+        ).isPresent()) {
+            return account;
+        }
 
         account.setBalance(account.getBalance().add(amount));
         repository.save(account);
@@ -62,7 +72,8 @@ public class BankAccountService {
                 TransactionType.DEPOSIT,
                 amount,
                 account.getCurrency(),
-                "Deposit"
+                "Deposit",
+                requestId
         ));
 
         return account;
@@ -70,11 +81,21 @@ public class BankAccountService {
 
     // Warto dodać @Transactional — dla Optimistic Locking: @Transactional + @Version działa razem.
     @Transactional
-    public BankAccountEntity withdraw(String number, BigDecimal amount) {
+    public BankAccountEntity withdraw(String requestId, String number, BigDecimal amount) {
         validateAmount(amount);
+
+        if (requestId == null || requestId.isBlank()) {
+            throw new IllegalArgumentException("Withdraw request id is required");
+        }
 
         BankAccountEntity account = repository.findById(number)
                 .orElseThrow(() -> new IllegalArgumentException("Account not found: " + number));
+
+        if (transactionRepository.findFirstByTransferRequestIdAndAccountNumberAndType(
+                requestId, number, TransactionType.WITHDRAW
+        ).isPresent()) {
+            return account;
+        }
 
         if (account.getBalance().compareTo(amount) < 0) {
             throw new IllegalStateException("Insufficient funds");
@@ -88,7 +109,8 @@ public class BankAccountService {
                 TransactionType.WITHDRAW,
                 amount,
                 account.getCurrency(),
-                "Withdrawal"
+                "Withdrawal",
+                requestId
         ));
 
         return account;
@@ -98,11 +120,21 @@ public class BankAccountService {
     // W tej operacji używamy dodatkowo oprócz Optimistic Locking także PESSIMISTIC_WRITE lock (FOR UPDATE)
     // w repository.findAllForUpdateOrderByNumber(orderedNumbers)
     @Transactional
-    public void transfer(String fromNumber, String toNumber, BigDecimal amount) {
+    public boolean transfer(String requestId, String fromNumber, String toNumber, BigDecimal amount) {
         validateAmount(amount);
 
         if (fromNumber.equals(toNumber)) {
             throw new IllegalArgumentException("Cannot transfer to the same account");
+        }
+
+        if (requestId == null || requestId.isBlank()) {
+            throw new IllegalArgumentException("Transfer request id is required");
+        }
+
+        if (transactionRepository.findFirstByTransferRequestIdAndAccountNumberAndType(
+                requestId, fromNumber, TransactionType.TRANSFER_OUT
+        ).isPresent()) {
+            return false;
         }
 
         List<String> orderedNumbers = List.of(fromNumber, toNumber).stream()
@@ -163,7 +195,8 @@ public class BankAccountService {
                 TransactionType.TRANSFER_OUT,
                 amount,
                 from.getCurrency(),
-                "Transfer to " + to.getNumber()
+                "Transfer to " + to.getNumber(),
+                requestId
         ));
 
         transactionRepository.save(new AccountTransactionEntity(
@@ -171,8 +204,11 @@ public class BankAccountService {
                 TransactionType.TRANSFER_IN,
                 amount,
                 to.getCurrency(),
-                "Transfer from " + from.getNumber()
+                "Transfer from " + from.getNumber(),
+                requestId
         ));
+
+        return true;
     }
 
     @Transactional(readOnly = true)
