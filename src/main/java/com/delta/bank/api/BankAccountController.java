@@ -36,7 +36,9 @@ public class BankAccountController {
                 entity.getNumber(),
                 entity.getOwner(),
                 entity.getBalance(),
-                entity.getCurrency()
+                entity.getCurrency(),
+                entity.getCreatedAt(),
+                entity.getUpdatedAt()
         );
     }
 
@@ -49,7 +51,9 @@ public class BankAccountController {
                 entity.getNumber(),
                 entity.getOwner(),
                 entity.getBalance(),
-                entity.getCurrency()
+                entity.getCurrency(),
+                entity.getCreatedAt(),
+                entity.getUpdatedAt()
         );
     }
 

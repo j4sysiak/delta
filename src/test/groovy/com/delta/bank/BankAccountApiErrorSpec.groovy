@@ -51,7 +51,9 @@ class BankAccountApiErrorSpec extends BaseIntegrationSpec {
         then:
         response.andExpect(status().isBadRequest())
                 .andExpect(jsonPath('$.status').value(400))
-                .andExpect(jsonPath('$.error').value('Bad Request'))
+                .andExpect(jsonPath('$.reason').value('Bad Request'))
+                .andExpect(jsonPath('$.errorCode').value('VALIDATION_ERROR'))
+                .andExpect(jsonPath('$.message').value('Currency must be a 3-letter uppercase code'))
     }
 
     def "returns 409 for insufficient funds on withdraw"() {
@@ -74,7 +76,9 @@ class BankAccountApiErrorSpec extends BaseIntegrationSpec {
         then:
         response.andExpect(status().isConflict())
                 .andExpect(jsonPath('$.status').value(409))
-                .andExpect(jsonPath('$.error').value('Conflict'))
+                .andExpect(jsonPath('$.reason').value('Conflict'))
+                .andExpect(jsonPath('$.errorCode').value('INSUFFICIENT_FUNDS'))
+                .andExpect(jsonPath('$.message').value('Insufficient funds'))
     }
 
 

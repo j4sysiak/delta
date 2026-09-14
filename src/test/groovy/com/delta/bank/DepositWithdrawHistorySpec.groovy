@@ -66,6 +66,8 @@ class DepositWithdrawHistorySpec extends BaseIntegrationSpec {
         mockMvc.perform(get("/accounts/PLN-9201/transactions"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath('$').isArray())
+                .andExpect(jsonPath('$[0].createdAt').exists())
+                .andExpect(jsonPath('$[0].updatedAt').exists())
                 .andExpect(jsonPath('$[?(@.transferRequestId == "dep-9201")]').value(org.hamcrest.Matchers.hasSize(1)))
                 .andExpect(jsonPath('$[?(@.transferRequestId == "wd-9201")]').value(org.hamcrest.Matchers.hasSize(1)))
                 .andExpect(jsonPath('$[?(@.type == "DEPOSIT")]').value(org.hamcrest.Matchers.hasSize(2)))

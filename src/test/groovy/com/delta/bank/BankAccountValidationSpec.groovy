@@ -50,7 +50,8 @@ class BankAccountValidationSpec extends BaseIntegrationSpec {
         then:
         response.andExpect(status().isBadRequest())
                 .andExpect(jsonPath('$.status').value(400))
-                .andExpect(jsonPath('$.error').value('Bad Request'))
+                .andExpect(jsonPath('$.reason').value('Bad Request'))
+                .andExpect(jsonPath('$.errorCode').value('VALIDATION_ERROR'))
     }
 
     def "rejects negative balance"() {

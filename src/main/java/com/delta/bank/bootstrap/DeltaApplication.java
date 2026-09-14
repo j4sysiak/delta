@@ -2,8 +2,10 @@ package com.delta.bank.bootstrap;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 
 @SpringBootApplication(scanBasePackages = "com.delta.bank")
+@EnableJpaAuditing
 @org.springframework.data.jpa.repository.config.EnableJpaRepositories(basePackages = "com.delta.bank.domain")
 @org.springframework.boot.autoconfigure.domain.EntityScan(basePackages = "com.delta.bank.domain")
 public class DeltaApplication {

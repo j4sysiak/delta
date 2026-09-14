@@ -14,30 +14,35 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ErrorResponse> handleIllegalArgument(IllegalArgumentException ex) {
-        return ResponseEntity.badRequest().body(
-                new ErrorResponse(400, "Bad Request", ex.getMessage())
-        );
+        return error(HttpStatus.BAD_REQUEST, "INVALID_REQUEST", ex.getMessage());
     }
 
     @ExceptionHandler(IllegalStateException.class)
     public ResponseEntity<ErrorResponse> handleIllegalState(IllegalStateException ex) {
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(
-                new ErrorResponse(409, "Conflict", ex.getMessage())
-        );
+        String errorCode = ex.getMessage() != null && ex.getMessage().contains("Insufficient")
+                ? "INSUFFICIENT_FUNDS"
+                : "BUSINESS_RULE_VIOLATION";
+        return error(HttpStatus.CONFLICT, errorCode, ex.getMessage());
     }
 
     @ExceptionHandler(ObjectOptimisticLockingFailureException.class)
     public ResponseEntity<ErrorResponse> handleOptimisticLock(ObjectOptimisticLockingFailureException ex) {
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(
-                new ErrorResponse(409, "Conflict", "The account was updated by another transaction. Please retry.")
+        return error(
+                HttpStatus.CONFLICT,
+                "OPTIMISTIC_LOCK_CONFLICT",
+                "The account was updated by another transaction. Please retry."
         );
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidation(MethodArgumentNotValidException ex) {
         String message = Objects.requireNonNull(ex.getBindingResult().getFieldError()).getDefaultMessage();
-        return ResponseEntity.badRequest().body(
-                new ErrorResponse(400, "Bad Request", message)
+        return error(HttpStatus.BAD_REQUEST, "VALIDATION_ERROR", message);
+    }
+
+    private ResponseEntity<ErrorResponse> error(HttpStatus status, String errorCode, String message) {
+        return ResponseEntity.status(status).body(
+                new ErrorResponse(status.value(), status.getReasonPhrase(), errorCode, message)
         );
     }
 }

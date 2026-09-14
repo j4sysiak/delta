@@ -1,11 +1,17 @@
 package com.delta.bank.domain;
 
 import jakarta.persistence.*;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.Objects;
 
 @Entity
 @Table(name = "bank_accounts")
+@EntityListeners(AuditingEntityListener.class)
 public class BankAccountEntity {
 
     @Id
@@ -24,6 +30,14 @@ public class BankAccountEntity {
     @Version
     @Column(nullable = false)
     private Long version;
+
+    @CreatedDate
+    @Column(nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+
+    @LastModifiedDate
+    @Column(nullable = false)
+    private LocalDateTime updatedAt;
 
     protected BankAccountEntity() {
     }
@@ -61,5 +75,13 @@ public class BankAccountEntity {
 
     public Long getVersion() {
         return version;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
     }
 }

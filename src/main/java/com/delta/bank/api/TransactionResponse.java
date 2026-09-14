@@ -1,5 +1,6 @@
 package com.delta.bank.api;
 
+import com.delta.bank.domain.TransactionStatus;
 import com.delta.bank.domain.TransactionType;
 
 import java.math.BigDecimal;
@@ -13,6 +14,8 @@ public record TransactionResponse(
         String currency,
         String description,
         String transferRequestId,
-        LocalDateTime createdAt
+        TransactionStatus status,
+        LocalDateTime createdAt,
+        LocalDateTime updatedAt
 ) {
 }

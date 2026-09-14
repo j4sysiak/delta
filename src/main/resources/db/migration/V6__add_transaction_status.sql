@@ -1,0 +1,2 @@
+ALTER TABLE bank_transactions
+    ADD COLUMN status VARCHAR(32) NOT NULL DEFAULT 'POSTED';

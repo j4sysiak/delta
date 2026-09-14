@@ -1,8 +1,6 @@
 package com.delta.bank.api;
 
 import com.delta.bank.application.TransactionHistoryService;
-import com.delta.bank.domain.AccountTransactionEntity;
-import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -31,7 +29,9 @@ public class TransactionController {
                         tx.getCurrency(),
                         tx.getDescription(),
                         tx.getTransferRequestId(),
-                        tx.getCreatedAt()
+                        tx.getStatus(),
+                        tx.getCreatedAt(),
+                        tx.getUpdatedAt()
                 ))
                 .toList();
     }

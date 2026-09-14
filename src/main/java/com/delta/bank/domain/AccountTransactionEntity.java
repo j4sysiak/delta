@@ -1,11 +1,16 @@
 package com.delta.bank.domain;
 
 import jakarta.persistence.*;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "bank_transactions")
+@EntityListeners(AuditingEntityListener.class)
 public class AccountTransactionEntity {
 
     @Id
@@ -31,8 +36,17 @@ public class AccountTransactionEntity {
     @Column(length = 64)
     private String transferRequestId;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 32)
+    @Enumerated(EnumType.STRING)
+    private TransactionStatus status = TransactionStatus.POSTED;
+
+    @CreatedDate
+    @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
+
+    @LastModifiedDate
+    @Column(nullable = false)
+    private LocalDateTime updatedAt;
 
     protected AccountTransactionEntity() {
     }
@@ -43,7 +57,7 @@ public class AccountTransactionEntity {
         this.amount = amount;
         this.currency = currency;
         this.description = description;
-        this.createdAt = LocalDateTime.now();
+        this.status = TransactionStatus.POSTED;
     }
 
     public AccountTransactionEntity(String accountNumber, TransactionType type, BigDecimal amount, String currency, String description, String transferRequestId) {
@@ -79,7 +93,19 @@ public class AccountTransactionEntity {
         return transferRequestId;
     }
 
+    public TransactionStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(TransactionStatus status) {
+        this.status = status;
+    }
+
     public LocalDateTime getCreatedAt() {
         return createdAt;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
     }
 }

@@ -57,6 +57,8 @@ class BankAccountApiSpec extends BaseIntegrationSpec {
                 .andExpect(jsonPath('$.owner').value('Alice'))
                 .andExpect(jsonPath('$.balance').value(1500.0))
                 .andExpect(jsonPath('$.currency').value('PLN'))
+                .andExpect(jsonPath('$.createdAt').exists())
+                .andExpect(jsonPath('$.updatedAt').exists())
 
         when:
         def readResponse = mockMvc.perform(get("/accounts/PLN-1001"))
@@ -65,6 +67,8 @@ class BankAccountApiSpec extends BaseIntegrationSpec {
         readResponse.andExpect(status().isOk())
                 .andExpect(jsonPath('$.number').value('PLN-1001'))
                 .andExpect(jsonPath('$.owner').value('Alice'))
+                .andExpect(jsonPath('$.createdAt').exists())
+                .andExpect(jsonPath('$.updatedAt').exists())
     }
 
 
