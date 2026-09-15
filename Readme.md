@@ -200,6 +200,25 @@ Sprawdzenie:
 
 ```powershell
 curl.exe http://localhost:8080/health
+curl.exe http://localhost:8080/ready
+curl.exe http://localhost:8080/live
+curl.exe http://localhost:8080/actuator/health
+```
+
+Oczekiwane odpowiedzi:
+
+```json
+{"status":"UP","service":"delta-mini-bank"}
+{"status":"READY","service":"delta-mini-bank"}
+{"status":"ALIVE","service":"delta-mini-bank"}
+{"status":"UP"}
+```
+
+Swagger:
+
+```powershell
+curl.exe http://localhost:8080/v3/api-docs
+curl.exe http://localhost:8080/swagger-ui/index.html
 ```
 
 ### Testy integracyjne
