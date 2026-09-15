@@ -164,7 +164,7 @@ public class DeltaApplication {
 
 ## Uruchamianie
 
-### Produkcja
+### Produkcja (lokalnie, bez kontenera aplikacji)
 
 1. Uruchom bazę produkcyjną:
 
@@ -172,10 +172,34 @@ public class DeltaApplication {
 docker compose up -d
 ```
 
-2. Uruchom aplikację:
+2. Uruchom aplikację lokalnie:
 
 ```bash
 ./gradlew bootRun
+```
+
+### Produkcja (aplikacja w Dockerze, baza już działa w Dockerze)
+
+Jeśli chcesz uruchomić samą aplikację w kontenerze, a bazę PostgreSQL zostawić jako istniejący serwis Docker:
+Uwaga baza na dockerze musi być uruchomiona wcześniej, np. przez `docker compose up -d`.
+
+```powershell
+docker stop delta-app
+./gradlew bootJar
+docker build -t delta-app .
+docker run --rm -d `
+  --name delta-app `
+  -p 8080:8080 `
+  -e SPRING_DATASOURCE_URL=jdbc:postgresql://host.docker.internal:5432/delta `
+  -e SPRING_DATASOURCE_USERNAME=delta `
+  -e SPRING_DATASOURCE_PASSWORD=delta `
+  delta-app
+```
+
+Sprawdzenie:
+
+```powershell
+curl.exe http://localhost:8080/health
 ```
 
 ### Testy integracyjne
@@ -212,10 +236,22 @@ Jeśli chcesz sprawdzić port testowy 5433:
 netstat -ano | findstr :5433
 ```
 
-I zatrzymać kontener testowy:
+Zatrzymanie kontenera produkcyjnego bazy:
+
+```powershell
+docker compose down
+```
+
+Zatrzymanie kontenera testowego bazy:
 
 ```powershell
 docker compose -f docker-compose.test.yml down
+```
+
+Zatrzymanie kontenera aplikacji:
+
+```powershell
+docker stop delta-app
 ```
 
 Jeżeli potrzebujesz zatrzymać produkcyjną bazę PostgreSQL i przypadkowo w tle działa Spring Boot:
