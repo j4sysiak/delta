@@ -1,12 +1,14 @@
 package com.delta.bank.api;
 
 import com.delta.bank.application.TransactionHistoryService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/accounts")
@@ -19,8 +21,19 @@ public class TransactionController {
     }
 
     @GetMapping("/{number}/transactions")
-    public List<TransactionResponse> getTransactions(@PathVariable String number) {
-        return service.getTransactions(number).stream()
+    public Page<TransactionResponse> getTransactions(
+            @PathVariable String number,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "createdAt") String sortBy,
+            @RequestParam(defaultValue = "DESC") String direction
+    ) {
+        Sort.Direction sortDirection = Sort.Direction.fromString(direction);
+
+        return service.getTransactions(
+                        number,
+                        PageRequest.of(page, size, Sort.by(sortDirection, sortBy))
+                )
                 .map(tx -> new TransactionResponse(
                         tx.getId(),
                         tx.getAccountNumber(),
@@ -32,7 +45,6 @@ public class TransactionController {
                         tx.getStatus(),
                         tx.getCreatedAt(),
                         tx.getUpdatedAt()
-                ))
-                .toList();
+                ));
     }
 }

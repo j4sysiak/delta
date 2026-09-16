@@ -36,10 +36,10 @@ class TransactionStatusSpec extends BaseIntegrationSpec {
         then:
         mockMvc.perform(get("/accounts/PLN-9901/transactions"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath('$[?(@.type == "DEPOSIT")]').value(org.hamcrest.Matchers.hasSize(2)))
-                .andExpect(jsonPath('$[?(@.type == "DEPOSIT")].status')
+                .andExpect(jsonPath('$.content[?(@.type == "DEPOSIT")]').value(org.hamcrest.Matchers.hasSize(2)))
+                .andExpect(jsonPath('$.content[?(@.type == "DEPOSIT")].status')
                         .value(org.hamcrest.Matchers.everyItem(org.hamcrest.Matchers.is(TransactionStatus.POSTED.name()))))
-                .andExpect(jsonPath('$[?(@.type == "WITHDRAW")].status')
+                .andExpect(jsonPath('$.content[?(@.type == "WITHDRAW")].status')
                         .value(org.hamcrest.Matchers.everyItem(org.hamcrest.Matchers.is(TransactionStatus.POSTED.name()))))
     }
 }

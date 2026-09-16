@@ -4,6 +4,7 @@ import com.delta.bank.application.BankAccountService
 import com.delta.bank.domain.AccountTransactionRepository
 import com.delta.bank.domain.TransactionType
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.data.domain.PageRequest
 
 class TransactionHistorySpec extends BaseIntegrationSpec {
 
@@ -21,8 +22,12 @@ class TransactionHistorySpec extends BaseIntegrationSpec {
         service.deposit('dep-5001', 'PLN-5001', new BigDecimal('250.00'))
         service.withdraw('wd-5001', 'PLN-5001', new BigDecimal('100.00'))
 
+
+        def of = PageRequest.of(0, 10)
         then:
-        def transactions = transactionRepository.findByAccountNumberOrderByCreatedAtDesc('PLN-5001')
+        def transactions = transactionRepository
+                .findByAccountNumberOrderByCreatedAtDesc('PLN-5001', of)
+
         transactions.size() == 3
         transactions[0].type == TransactionType.WITHDRAW
         transactions[1].type == TransactionType.DEPOSIT

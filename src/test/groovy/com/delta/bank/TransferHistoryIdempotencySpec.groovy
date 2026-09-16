@@ -47,12 +47,12 @@ class TransferHistoryIdempotencySpec extends BaseIntegrationSpec {
 
 
         /*
-        Ten fragment testuje idempotencję przelewu.
-        Pierwszy POST /accounts/transfer wysyła przelew z payload.
+        Ten fragment testuje idempotencję transferu.
+        Pierwszy POST  /accounts/transfer wysyła transfer z payload.
         Oczekiwany wynik:
         status 200 OK
         $.executed == true
-        To znaczy: przelew został faktycznie wykonany.
+        To znaczy: transfer został faktycznie wykonany.
         * */
         when:
         mockMvc.perform(post("/accounts/transfer")
@@ -76,14 +76,16 @@ class TransferHistoryIdempotencySpec extends BaseIntegrationSpec {
         then:
         mockMvc.perform(get("/accounts/PLN-8001/transactions"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath('$').isArray())
-                .andExpect(jsonPath('$[?(@.transferRequestId == "req-8001")]').value(org.hamcrest.Matchers.hasSize(1)))
+                .andExpect(jsonPath('$.content').isArray())
+                .andExpect(jsonPath('$.content[?(@.transferRequestId == "req-8001")]')
+                        .value(org.hamcrest.Matchers.hasSize(1)))
 
         and:
         mockMvc.perform(get("/accounts/PLN-8002/transactions"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath('$').isArray())
-                .andExpect(jsonPath('$[?(@.transferRequestId == "req-8001")]').value(org.hamcrest.Matchers.hasSize(1)))
+                .andExpect(jsonPath('$.content').isArray())
+                .andExpect(jsonPath('$.content[?(@.transferRequestId == "req-8001")]')
+                        .value(org.hamcrest.Matchers.hasSize(1)))
 
         and:
         mockMvc.perform(get("/accounts/PLN-8001"))

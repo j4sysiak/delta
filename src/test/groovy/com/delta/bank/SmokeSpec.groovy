@@ -201,9 +201,9 @@ class SmokeSpec extends BaseIntegrationSpec {
         expect:
         mockMvc.perform(get("/accounts/PLN-SMOKE-05/transactions"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath('$').isArray())
-                .andExpect(jsonPath('$[0].accountNumber').value('PLN-SMOKE-05'))
-                .andExpect(jsonPath('$[0].type').value('DEPOSIT'))
-                .andExpect(jsonPath('$[0].transferRequestId').value('hist-smoke-01'))
+                .andExpect(jsonPath('$.content').isArray())
+                .andExpect(jsonPath('$.content[0].accountNumber').value('PLN-SMOKE-05'))
+                .andExpect(jsonPath('$.content[0].type').value('DEPOSIT'))
+                .andExpect(jsonPath('$.content[0].transferRequestId').value('hist-smoke-01'))
     }
 }

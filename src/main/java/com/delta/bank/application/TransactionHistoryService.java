@@ -2,9 +2,9 @@ package com.delta.bank.application;
 
 import com.delta.bank.domain.AccountTransactionEntity;
 import com.delta.bank.domain.AccountTransactionRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Service
 public class TransactionHistoryService {
@@ -15,7 +15,7 @@ public class TransactionHistoryService {
         this.repository = repository;
     }
 
-    public List<AccountTransactionEntity> getTransactions(String accountNumber) {
-        return repository.findByAccountNumberOrderByCreatedAtDesc(accountNumber);
+    public Page<AccountTransactionEntity> getTransactions(String accountNumber, Pageable pageable) {
+        return repository.findByAccountNumberOrderByCreatedAtDesc(accountNumber, pageable);
     }
 }

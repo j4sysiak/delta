@@ -65,12 +65,12 @@ class DepositWithdrawHistorySpec extends BaseIntegrationSpec {
         then:
         mockMvc.perform(get("/accounts/PLN-9201/transactions"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath('$').isArray())
-                .andExpect(jsonPath('$[0].createdAt').exists())
-                .andExpect(jsonPath('$[0].updatedAt').exists())
-                .andExpect(jsonPath('$[?(@.transferRequestId == "dep-9201")]').value(org.hamcrest.Matchers.hasSize(1)))
-                .andExpect(jsonPath('$[?(@.transferRequestId == "wd-9201")]').value(org.hamcrest.Matchers.hasSize(1)))
-                .andExpect(jsonPath('$[?(@.type == "DEPOSIT")]').value(org.hamcrest.Matchers.hasSize(2)))
-                .andExpect(jsonPath('$[?(@.type == "WITHDRAW")]').value(org.hamcrest.Matchers.hasSize(1)))
+                .andExpect(jsonPath('$.content').isArray())
+                .andExpect(jsonPath('$.content[0].createdAt').exists())
+                .andExpect(jsonPath('$.content[0].updatedAt').exists())
+                .andExpect(jsonPath('$.content[?(@.transferRequestId == "dep-9201")]').value(org.hamcrest.Matchers.hasSize(1)))
+                .andExpect(jsonPath('$.content[?(@.transferRequestId == "wd-9201")]').value(org.hamcrest.Matchers.hasSize(1)))
+                .andExpect(jsonPath('$.content[?(@.type == "DEPOSIT")]').value(org.hamcrest.Matchers.hasSize(2)))
+                .andExpect(jsonPath('$.content[?(@.type == "WITHDRAW")]').value(org.hamcrest.Matchers.hasSize(1)))
     }
 }
