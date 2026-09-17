@@ -4,6 +4,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.time.LocalDateTime;
+
 public interface AccountTransactionRepository extends JpaRepository<AccountTransactionEntity, Long> {
 
     /*
@@ -33,9 +35,22 @@ public interface AccountTransactionRepository extends JpaRepository<AccountTrans
     * */
     Page<AccountTransactionEntity> findByAccountNumberOrderByCreatedAtDesc(String accountNumber, Pageable pageable);
 
-    java.util.Optional<AccountTransactionEntity> findFirstByTransferRequestIdAndAccountNumberAndType(
-            String transferRequestId,
-            String accountNumber,
-            TransactionType type
-    );
+    java.util.Optional<AccountTransactionEntity> findFirstByTransferRequestIdAndAccountNumberAndType(String transferRequestId,
+                                                                                                     String accountNumber,
+                                                                                                     TransactionType type);
+
+    Page<AccountTransactionEntity> findByAccountNumberAndTypeOrderByCreatedAtDesc(String accountNumber,
+                                                                                  TransactionType type,
+                                                                                  Pageable pageable);
+
+    Page<AccountTransactionEntity> findByAccountNumberAndCreatedAtBetweenOrderByCreatedAtDesc(String accountNumber,
+                                                                                              LocalDateTime from,
+                                                                                              LocalDateTime to,
+                                                                                              Pageable pageable);
+
+    Page<AccountTransactionEntity> findByAccountNumberAndTypeAndCreatedAtBetweenOrderByCreatedAtDesc(String accountNumber,
+                                                                                                     TransactionType type,
+                                                                                                     LocalDateTime fromDate,
+                                                                                                     LocalDateTime toDate,
+                                                                                                     Pageable pageable);
 }

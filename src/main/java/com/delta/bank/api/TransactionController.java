@@ -1,6 +1,7 @@
 package com.delta.bank.api;
 
 import com.delta.bank.application.TransactionHistoryService;
+import com.delta.bank.domain.TransactionType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -26,13 +27,19 @@ public class TransactionController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
             @RequestParam(defaultValue = "createdAt") String sortBy,
-            @RequestParam(defaultValue = "DESC") String direction
+            @RequestParam(defaultValue = "DESC") String direction,
+            @RequestParam(required = false) String type,
+            @RequestParam(required = false) String from,
+            @RequestParam(required = false) String to
     ) {
         Sort.Direction sortDirection = Sort.Direction.fromString(direction);
 
         return service.getTransactions(
                         number,
-                        PageRequest.of(page, size, Sort.by(sortDirection, sortBy))
+                        PageRequest.of(page, size, Sort.by(sortDirection, sortBy)),
+                        type != null ? TransactionType.valueOf(type.toUpperCase()) : null,
+                        from,
+                        to
                 )
                 .map(tx -> new TransactionResponse(
                         tx.getId(),

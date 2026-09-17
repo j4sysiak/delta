@@ -29,13 +29,58 @@ class TransactionHistoryPaginationSpec extends BaseIntegrationSpec {
         mockMvc = MockMvcBuilders.webAppContextSetup(context).build()
     }
 
-    def "history supports pagination"() {
+    def "History supports pagination"() {
+        given:
+        mockMvc.perform(post("/accounts")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content('''
+                {
+                  "number": "PLN-PAGE-01",
+                  "owner": "Alice",
+                  "balance": "1000.00",
+                  "currency": "PLN"
+                }
+            '''))
+                .andExpect(status().isCreated())
+
+        and:
+        mockMvc.perform(post("/accounts/PLN-PAGE-01/deposit")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content('''
+                {
+                  "requestId": "dep-page-01",
+                  "amount": "100.00"
+                }
+            '''))
+                .andExpect(status().isOk())
+
+        and:
+        mockMvc.perform(post("/accounts/PLN-PAGE-01/deposit")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content('''
+                {
+                  "requestId": "dep-page-02",
+                  "amount": "150.00"
+                }
+            '''))
+                .andExpect(status().isOk())
+
+        expect:
+        mockMvc.perform(get("/accounts/PLN-PAGE-01/transactions?page=0&size=10"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath('$.content').isArray())
+                .andExpect(jsonPath('$.content.length()').value(3))
+                .andExpect(jsonPath('$.totalElements').value(3))
+                .andExpect(jsonPath('$.totalPages').value(1))
+    }
+
+    def "History can be filtered by type"() {
         given:
         mockMvc.perform(post("/accounts")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content('''
                     {
-                      "number": "PLN-PAGE-01",
+                      "number": "PLN-TYPE-01",
                       "owner": "Alice",
                       "balance": "1000.00",
                       "currency": "PLN"
@@ -44,33 +89,76 @@ class TransactionHistoryPaginationSpec extends BaseIntegrationSpec {
                 .andExpect(status().isCreated())
 
         and:
-        mockMvc.perform(post("/accounts/PLN-PAGE-01/deposit")
+        mockMvc.perform(post("/accounts/PLN-TYPE-01/deposit")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content('''
                     {
-                      "requestId": "dep-page-01",
+                      "requestId": "dep-type-01",
                       "amount": "100.00"
                     }
                 '''))
                 .andExpect(status().isOk())
 
         and:
-        mockMvc.perform(post("/accounts/PLN-PAGE-01/deposit")
+        mockMvc.perform(post("/accounts/PLN-TYPE-01/withdraw")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content('''
                     {
-                      "requestId": "dep-page-02",
-                      "amount": "150.00"
+                      "requestId": "wd-type-01",
+                      "amount": "50.00"
                     }
                 '''))
                 .andExpect(status().isOk())
 
         expect:
-        mockMvc.perform(get("/accounts/PLN-PAGE-01/transactions?page=0&size=1"))
+        mockMvc.perform(get("/accounts/PLN-TYPE-01/transactions?type=DEPOSIT"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath('$.content').isArray())
-                .andExpect(jsonPath('$.content.length()').value(1))
-                .andExpect(jsonPath('$.totalElements').value(3))
-                .andExpect(jsonPath('$.totalPages').value(3))
+                .andExpect(jsonPath('$.content.length()').value(2))
+                .andExpect(jsonPath('$.content[0].type').value('DEPOSIT'))
+                .andExpect(jsonPath('$.content[1].type').value('DEPOSIT'))
+    }
+
+    def "History can be filtered by date range"() {
+        given:
+        mockMvc.perform(post("/accounts")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content('''
+                    {
+                      "number": "PLN-DATE-01",
+                      "owner": "Alice",
+                      "balance": "1000.00",
+                      "currency": "PLN"
+                    }
+                '''))
+                .andExpect(status().isCreated())
+
+        and:
+        mockMvc.perform(post("/accounts/PLN-DATE-01/deposit")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content('''
+                    {
+                      "requestId": "dep-date-01",
+                      "amount": "100.00"
+                    }
+                '''))
+                .andExpect(status().isOk())
+
+        and:
+        mockMvc.perform(post("/accounts/PLN-DATE-01/withdraw")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content('''
+                    {
+                      "requestId": "wd-date-01",
+                      "amount": "50.00"
+                    }
+                '''))
+                .andExpect(status().isOk())
+
+        expect:
+        mockMvc.perform(get("/accounts/PLN-DATE-01/transactions?from=2000-01-01T00:00:00&to=2999-12-31T23:59:59"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath('$.content').isArray())
+                .andExpect(jsonPath('$.content.length()').value(3))
     }
 }
