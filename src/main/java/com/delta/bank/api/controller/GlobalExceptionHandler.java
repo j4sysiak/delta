@@ -1,5 +1,6 @@
-package com.delta.bank.api;
+package com.delta.bank.api.controller;
 
+import com.delta.bank.api.exception.ErrorResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;

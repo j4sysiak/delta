@@ -1,4 +1,4 @@
-package com.delta.bank.application;
+package com.delta.bank.application.service;
 
 import com.delta.bank.domain.AccountTransactionEntity;
 import com.delta.bank.domain.AccountTransactionRepository;

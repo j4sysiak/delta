@@ -1,6 +1,8 @@
-package com.delta.bank.api;
+package com.delta.bank.api.controller;
 
-import com.delta.bank.application.TransactionHistoryService;
+import com.delta.bank.api.dto.TransactionResponse;
+import com.delta.bank.api.dto.TransactionSummaryResponse;
+import com.delta.bank.application.service.TransactionHistoryService;
 import com.delta.bank.domain.TransactionType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -57,5 +59,14 @@ public class TransactionController {
                         tx.getCreatedAt(),
                         tx.getUpdatedAt()
                 ));
+    }
+
+    @GetMapping("/{number}/summary")
+    public TransactionSummaryResponse getSummary(
+            @PathVariable String number,
+            @RequestParam(required = false) String from,
+            @RequestParam(required = false) String to
+    ) {
+        return service.getSummary(number, from, to);
     }
 }

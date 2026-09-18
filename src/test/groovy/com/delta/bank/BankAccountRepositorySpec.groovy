@@ -1,9 +1,7 @@
 package com.delta.bank
 
-import com.delta.bank.application.BankAccountService
+import com.delta.bank.application.service.BankAccountService
 import org.springframework.transaction.annotation.Transactional
-
-import java.math.BigDecimal
 
 @Transactional
 class BankAccountRepositorySpec extends BaseIntegrationSpec {

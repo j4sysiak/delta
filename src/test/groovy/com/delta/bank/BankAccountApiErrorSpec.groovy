@@ -1,6 +1,6 @@
 package com.delta.bank
 
-import com.delta.bank.application.BankAccountService
+import com.delta.bank.application.service.BankAccountService
 import com.delta.bank.bootstrap.DeltaApplication
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc

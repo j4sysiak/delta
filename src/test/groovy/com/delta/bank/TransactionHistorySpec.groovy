@@ -1,6 +1,6 @@
 package com.delta.bank
 
-import com.delta.bank.application.BankAccountService
+import com.delta.bank.application.service.BankAccountService
 import com.delta.bank.domain.AccountTransactionRepository
 import com.delta.bank.domain.TransactionType
 import org.springframework.beans.factory.annotation.Autowired

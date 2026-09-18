@@ -1,6 +1,7 @@
-package com.delta.bank.api;
+package com.delta.bank.api.controller;
 
-import com.delta.bank.application.BankAccountService;
+import com.delta.bank.api.dto.*;
+import com.delta.bank.application.service.BankAccountService;
 import com.delta.bank.domain.BankAccountEntity;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;

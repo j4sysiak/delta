@@ -1,5 +1,6 @@
-package com.delta.bank.api;
+package com.delta.bank.api.controller;
 
+import com.delta.bank.api.dto.HealthResponse;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
