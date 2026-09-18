@@ -161,4 +161,59 @@ class TransactionHistoryPaginationSpec extends BaseIntegrationSpec {
                 .andExpect(jsonPath('$.content').isArray())
                 .andExpect(jsonPath('$.content.length()').value(3))
     }
+
+    def "History can be filtered by amount range"() {
+        given:
+        mockMvc.perform(post("/accounts")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content('''
+                {
+                  "number": "PLN-AMOUNT-01",
+                  "owner": "Alice",
+                  "balance": "1000.00",
+                  "currency": "PLN"
+                }
+            '''))
+                .andExpect(status().isCreated())
+
+        and:
+        mockMvc.perform(post("/accounts/PLN-AMOUNT-01/deposit")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content('''
+                {
+                  "requestId": "dep-amt-01",
+                  "amount": "50.00"
+                }
+            '''))
+                .andExpect(status().isOk())
+
+        and:
+        mockMvc.perform(post("/accounts/PLN-AMOUNT-01/deposit")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content('''
+                {
+                  "requestId": "dep-amt-02",
+                  "amount": "150.00"
+                }
+            '''))
+                .andExpect(status().isOk())
+
+        and:
+        mockMvc.perform(post("/accounts/PLN-AMOUNT-01/withdraw")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content('''
+                {
+                  "requestId": "wd-amt-01",
+                  "amount": "25.00"
+                }
+            '''))
+                .andExpect(status().isOk())
+
+        expect:
+        mockMvc.perform(get("/accounts/PLN-AMOUNT-01/transactions?minAmount=100.00&maxAmount=200.00"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath('$.content').isArray())
+                .andExpect(jsonPath('$.content.length()').value(1))
+                .andExpect(jsonPath('$.content[0].amount').value(150.0))
+    }
 }

@@ -4,6 +4,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 public interface AccountTransactionRepository extends JpaRepository<AccountTransactionEntity, Long> {
@@ -53,4 +54,34 @@ public interface AccountTransactionRepository extends JpaRepository<AccountTrans
                                                                                                      LocalDateTime fromDate,
                                                                                                      LocalDateTime toDate,
                                                                                                      Pageable pageable);
+
+    Page<AccountTransactionEntity> findByAccountNumberAndAmountBetweenOrderByCreatedAtDesc(String accountNumber,
+                                                                                           BigDecimal minAmount,
+                                                                                           BigDecimal maxAmount,
+                                                                                           Pageable pageable
+    );
+
+    Page<AccountTransactionEntity> findByAccountNumberAndTypeAndAmountBetweenOrderByCreatedAtDesc(String accountNumber,
+                                                                                                  TransactionType type,
+                                                                                                  BigDecimal minAmount,
+                                                                                                  BigDecimal maxAmount,
+                                                                                                  Pageable pageable
+    );
+
+    Page<AccountTransactionEntity> findByAccountNumberAndCreatedAtBetweenAndAmountBetweenOrderByCreatedAtDesc(String accountNumber,
+                                                                                                              LocalDateTime from,
+                                                                                                              LocalDateTime to,
+                                                                                                              BigDecimal minAmount,
+                                                                                                              BigDecimal maxAmount,
+                                                                                                              Pageable pageable
+    );
+
+    Page<AccountTransactionEntity> findByAccountNumberAndTypeAndCreatedAtBetweenAndAmountBetweenOrderByCreatedAtDesc(String accountNumber,
+                                                                                                                     TransactionType type,
+                                                                                                                     LocalDateTime from,
+                                                                                                                     LocalDateTime to,
+                                                                                                                     BigDecimal minAmount,
+                                                                                                                     BigDecimal maxAmount,
+                                                                                                                     Pageable pageable
+    );
 }

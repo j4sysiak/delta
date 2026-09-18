@@ -30,7 +30,9 @@ public class TransactionController {
             @RequestParam(defaultValue = "DESC") String direction,
             @RequestParam(required = false) String type,
             @RequestParam(required = false) String from,
-            @RequestParam(required = false) String to
+            @RequestParam(required = false) String to,
+            @RequestParam(required = false) String minAmount,
+            @RequestParam(required = false) String maxAmount
     ) {
         Sort.Direction sortDirection = Sort.Direction.fromString(direction);
 
@@ -39,7 +41,9 @@ public class TransactionController {
                         PageRequest.of(page, size, Sort.by(sortDirection, sortBy)),
                         type != null ? TransactionType.valueOf(type.toUpperCase()) : null,
                         from,
-                        to
+                        to,
+                        minAmount,
+                        maxAmount
                 )
                 .map(tx -> new TransactionResponse(
                         tx.getId(),
