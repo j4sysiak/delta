@@ -85,22 +85,24 @@ class VirtualThreadBankSpec extends Specification {
         result.summary() == "SUMMARY"
     }
 
-    /*
-    Co ten test rzeczywiście sprawdza?
+/*
+Co ten test rzeczywiście sprawdza?
 Test uruchamia:
-250 równoległych wywołań service.loadAll(...)
-Każde loadAll(...) uruchamia wewnętrznie trzy zadania:
-pobranie salda
-pobranie historii
-pobranie podsumowania
+ - 250 równoległych wywołań service.loadAll(...)
+ - Każde loadAll(...) uruchamia wewnętrznie trzy zadania:
+   1. pobranie salda
+   2. pobranie historii
+   3. pobranie podsumowania
+
 W przybliżeniu test tworzy więc:
-250 zewnętrznych virtual threads
-+
-3000 wewnętrznych virtual threads
-=
-około 4000 zadań
-Każde zadanie loadera czeka 20 ms, dzięki czemu test rzeczywiście sprawdza obsługę wielu równoległych operacji oczekujących.
-     */
+ - 250 zewnętrznych virtual threads
+   +
+   750 wewnętrznych virtual threads
+   =
+   około 1000 zadań
+Każde zadanie loadera czeka 20 ms, dzięki czemu test rzeczywiście sprawdza obsługę wielu
+równoległych operacji oczekujących.
+*/
     def "handles 250 concurrent requests"() {
         given:
         // Używamy Stub zamiast Mock, bo w tym teście nie sprawdzamy interakcji,
