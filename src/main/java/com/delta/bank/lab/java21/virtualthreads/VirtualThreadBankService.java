@@ -24,7 +24,7 @@ public class VirtualThreadBankService {
          *
          *        () -> loader.loadAccountBalance(accountNumber)
          *
-         *    jest krótkim zapisem zadania typu Callable<String>.
+         *    Jest krótkim zapisem zadania typu Callable<String>.
          *    Lambda nie przyjmuje argumentów i zwraca String.
          *
          *    Można ją zapisać bardziej rozwlekle:
@@ -109,6 +109,15 @@ public class VirtualThreadBankService {
          * używany w Javie to capturing lambda.
          */
         ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
+
+        /*
+         * Ten println jest wstawiony po to, aby pokazać, że zadania zgłoszone do executora
+         * mogą wykonywać się równolegle i niezależnie od głównego wątku metody loadAll.
+         *
+         * Kolejność wykonania println i submit(...) nie jest gwarantowana.
+         * W praktyce dla newVirtualThreadPerTaskExecutor() println wykona się bardzo szybko po submit(...),
+         * bo każde zadanie jest wykonywane w osobnym virtual thread.
+         */
         executor.submit(() -> {
             System.out.println("Virtual thread started: " + Thread.currentThread().getName());
         });
@@ -155,7 +164,7 @@ public class VirtualThreadBankService {
     private String getResult(Future<String> future) {
         try {
  /*
-  zwróci wartość zwróconą wcześniej przez zadanie przekazane do executor.submit(...), np.:
+  Zwróci wartość zwróconą wcześniej przez zadanie przekazane do executor.submit(...), np.:
    - dla balance → wynik loader.loadAccountBalance(accountNumber):     zwróci zamokowane "PLN-1001: BALANCE: 1000.00 PLN"
    - dla history → wynik loader.loadTransactionHistory(accountNumber): zwróci zamokowane "PLN-1001: TRANSACTION_HISTORY: [TEST_TX_1, TEST_TX_2, TEST_TX_3]"
    - dla summary → wynik loader.loadAccountSummary(accountNumber):     zwróci zamokowane "PLN-1001: SUMMARY: +150.00 PLN"

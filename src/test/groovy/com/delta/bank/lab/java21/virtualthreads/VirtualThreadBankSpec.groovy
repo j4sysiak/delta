@@ -136,6 +136,9 @@ równoległych operacji oczekujących.
         def requestExecutor = Executors.newVirtualThreadPerTaskExecutor()
 
 
+        // pierwszy krok
+        // requestExecutor.submit(...) nie zwraca od razu BankDataResult, tylko Future<BankDataResult>.
+        // To jest „uchwyt” do zadania, które wykonuje się równolegle w virtual thread ( w drugi krok).
         // requestExecutor.submit(...) nie zwraca od razu BankDataResult, tylko Future<BankDataResult>.
         // To jest „uchwyt” do zadania, które wykonuje się równolegle w virtual thread (drugi krok).
         when:
