@@ -1,9 +1,5 @@
-package com.delta.bank
+package com.delta.bank.lab.java21.recordpatterns
 
-import com.delta.bank.lab.java21.recordpatterns.AccountReference
-import com.delta.bank.lab.java21.recordpatterns.DepositCommand
-import com.delta.bank.lab.java21.recordpatterns.Money
-import com.delta.bank.lab.java21.recordpatterns.RecordPatternProcessor
 import spock.lang.Specification
 
 class RecordPatternSpec extends Specification {

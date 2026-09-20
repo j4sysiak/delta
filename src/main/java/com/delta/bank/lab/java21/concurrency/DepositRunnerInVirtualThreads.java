@@ -10,7 +10,7 @@ import java.util.concurrent.Future;
 import java.util.Objects;
 
 /*
-    wywołuje wiele równoległych zadań
+    Wywołuje wiele równoległych zadań
     każde zadanie wykonuje deposit(...)
 
 Ten runner:
@@ -22,7 +22,7 @@ Ten runner:
 6. zamyka executor przez try-with-resources.
 **/
 
-public class VirtualThreadDepositRunner {
+public class DepositRunnerInVirtualThreads {
 
     public BigDecimal runDeposits(
             DepositAccount account,
@@ -36,13 +36,25 @@ public class VirtualThreadDepositRunner {
             throw new IllegalArgumentException("depositCount must be greater than zero");
         }
 
+        // Przechowuje Future każdego zadania, aby później poczekać na zakończenie wszystkich wpłat.
         List<Future<?>> futures = new ArrayList<>(depositCount);
 
         // 1. tworzy executor virtual threads
-        try (ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor()) {
+        ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
+        try (executor) {
             for (int index = 0; index < depositCount; index++) {
                 // 2. uruchamia wiele wpłat
-                futures.add(executor.submit(() -> account.deposit(amount)));
+                futures.add(executor.submit(          // Future<?> submit(Runnable task);
+
+                      /*
+                        @FunctionalInterface
+                        public interface Runnable {
+                         void run();  --------------> ta metoda jest implementowana przez lambdę poniżej
+                         }
+                     **/
+
+                        () -> account.deposit(amount)
+                ));
             }
             // 4. czeka na zakończenie wszystkich zadań
             waitForAll(futures);
@@ -50,8 +62,7 @@ public class VirtualThreadDepositRunner {
             // 5. odczytuje saldo końcowe
             return account.balance();
 
-            // 6. zamyka executor przez try-with-resources
-        }
+        } // 6. zamyka executor przez try-with-resources
     }
 
     private void waitForAll(List<Future<?>> futures) {

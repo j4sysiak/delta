@@ -1,14 +1,10 @@
-package com.delta.bank
+package com.delta.bank.lab.java21.concurrency
 
-import com.delta.bank.lab.java21.concurrency.ConcurrentBankAccount
-import com.delta.bank.lab.java21.concurrency.UnsafeBankAccount
-import com.delta.bank.lab.java21.concurrency.VirtualThreadDepositRunner
 import spock.lang.Specification
 
 class ConcurrentVirtualThreadSpec extends Specification {
 
-    private final VirtualThreadDepositRunner runner =
-            new VirtualThreadDepositRunner()
+    private final DepositRunnerInVirtualThreads runner = new DepositRunnerInVirtualThreads()
 
     def "safe account preserves all concurrent deposits"() {
         given:

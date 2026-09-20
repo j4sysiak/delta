@@ -1,8 +1,5 @@
-package com.delta.bank
+package com.delta.bank.lab.java21.virtualthreads
 
-import com.delta.bank.lab.java21.virtualthreads.BankDataLoader
-import com.delta.bank.lab.java21.virtualthreads.BankDataResult
-import com.delta.bank.lab.java21.virtualthreads.VirtualThreadBankService
 import spock.lang.Specification
 
 import java.util.concurrent.Callable

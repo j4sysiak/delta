@@ -1,6 +1,5 @@
 package com.delta.bank.lab.java21.patternmatching
 
-
 import spock.lang.Specification
 
 class BankOperationSpec extends Specification {
