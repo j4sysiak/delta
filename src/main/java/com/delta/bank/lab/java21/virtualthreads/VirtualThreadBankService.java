@@ -109,22 +109,29 @@ public class VirtualThreadBankService {
          * używany w Javie to capturing lambda.
          */
         ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
+        executor.submit(() -> {
+            System.out.println("Virtual thread started: " + Thread.currentThread().getName());
+        });
+
         try (executor) {
 
             /*
              * Zgłasza zadanie pobrania salda do executora virtual threads.
              *
              * Lambda jest Callable<String>, które przechwytuje accountNumber
-             * oraz referencję this.loader.submit(...) zwraca Future<String>,
+             * oraz referencję this.loader.submit(...) zwraca Future<String>  ( <T> Future<T> submit(Callable<T> task);),
              * czyli uchwyt do wyniku dostępnego później przez balance.get().
              */
             Future<String> balance = executor.submit(
                     // Nie wykonuje się od razu w tym miejscu
                     // Ona jest przekazywana do: executor.submit(...)
                     // wykonuje się wirtualnym wątkiem, który pobiera historię transakcji
-                    // dopiero fizycznie wykona się to, kiedy wirtualny wątek zostanie uruchomiony przez executor
-                    // a to może nastąpić w dowolnym momencie po submit, w zależności od dostępności wirtualnych wątków i harmonogramu executor
+                    // dopiero fizycznie wykona się, to kiedy wirtualny wątek zostanie uruchomiony przez executor
+                    // a to może nastąpić w dowolnym momencie po submit, w zależności od dostępności wirtualnych wątków
+                    // i harmonogramu executor
                     () -> loader.loadAccountBalance(accountNumber)
+
+
             );
 
             Future<String> history = executor.submit(

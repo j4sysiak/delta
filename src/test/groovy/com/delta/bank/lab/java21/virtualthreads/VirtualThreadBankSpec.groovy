@@ -110,6 +110,12 @@ równoległych operacji oczekujących.
         def loader = Stub(BankDataLoader) {
             // Symuluje wolne pobranie salda (np. z bazy lub API),
             // aby przetestować zachowanie przy współbieżnych wywołaniach.
+            // to w { ... } jest Closure w Groovy
+            // czyli anonimowy blok kodu, który można przekazać jako wartość i później wykonać.
+            // W tym zapisie:
+            //         String accountNumber — parametr closure
+            //         -> — oddziela listę parametrów od ciała
+            // ostatnie wyrażenie, czyli "$accountNumber: BALANCE", jest zwracane jako wynik
             loadAccountBalance(_) >> { String accountNumber ->
                 Thread.sleep(20)
                 "$accountNumber: BALANCE"
@@ -129,6 +135,9 @@ równoległych operacji oczekujących.
         def service = new VirtualThreadBankService(loader)
         def requestExecutor = Executors.newVirtualThreadPerTaskExecutor()
 
+
+        // requestExecutor.submit(...) nie zwraca od razu BankDataResult, tylko Future<BankDataResult>.
+        // To jest „uchwyt” do zadania, które wykonuje się równolegle w virtual thread (drugi krok).
         when:
         def futures = (1..250).collect { index ->
             requestExecutor.submit({ ->
@@ -146,24 +155,35 @@ równoległych operacji oczekujących.
             requestExecutor.submit(task)
         }*/
 
+        // drugi krok
+        /*
+        1. czeka aż dane zadanie się skończy,
+        2. odbiera jego wynik,
+        3. rzuca wyjątek, jeśli zadanie się wywaliło,
+        4. pilnuje limitu czasu, żeby test nie wisiał w nieskończoność.
+        * */
         def results = futures.collect { future ->
             future.get(30, TimeUnit.SECONDS)
         }
 
         then:
         results.size() == 250
-        results.every { result ->
-            result != null &&
-                    result.balance().contains("BALANCE") &&
-                    result.history().contains("HISTORY") &&
-                    result.summary().contains("SUMMARY")
+        // Weryfikujemy, że każde równoległe wywołanie zwróciło poprawny, niepusty wynik
+        // i że wszystkie trzy części odpowiedzi zawierają oczekiwane dane.
+        results.every { res ->
+            res != null &&
+                    res.balance().contains("BALANCE") &&
+                    res.history().contains("HISTORY") &&
+                    res.summary().contains("SUMMARY")
         }
 
         and:
-        results.every { result ->
-            result.balance().startsWith("ACC-") &&
-                    result.history().startsWith("ACC-") &&
-                    result.summary().startsWith("ACC-")
+        // Sprawdzamy, że każdy zwrócony wynik zachowuje numer konta w każdym polu,
+        // więc dane z równoległych wywołań nie mieszają się między różnymi requestami.
+        results.every { res ->
+                    res.balance().startsWith("ACC-") &&
+                    res.history().startsWith("ACC-") &&
+                    res.summary().startsWith("ACC-")
         }
 
         cleanup:
