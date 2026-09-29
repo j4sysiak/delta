@@ -51,7 +51,11 @@ public class AccountTransactionEntity {
     protected AccountTransactionEntity() {
     }
 
-    public AccountTransactionEntity(String accountNumber, TransactionType type, BigDecimal amount, String currency, String description) {
+    public AccountTransactionEntity(String accountNumber,
+                                    TransactionType type,
+                                    BigDecimal amount,
+                                    String currency,
+                                    String description) {
         this.accountNumber = accountNumber;
         this.type = type;
         this.amount = amount;
@@ -60,7 +64,12 @@ public class AccountTransactionEntity {
         this.status = TransactionStatus.POSTED;
     }
 
-    public AccountTransactionEntity(String accountNumber, TransactionType type, BigDecimal amount, String currency, String description, String transferRequestId) {
+    public AccountTransactionEntity(String accountNumber,
+                                    TransactionType type,
+                                    BigDecimal amount,
+                                    String currency,
+                                    String description,
+                                    String transferRequestId) {
         this(accountNumber, type, amount, currency, description);
         this.transferRequestId = transferRequestId;
     }

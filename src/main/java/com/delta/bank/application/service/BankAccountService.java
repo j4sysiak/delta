@@ -19,7 +19,8 @@ public class BankAccountService {
     private final BankAccountRepository repository;
     private final AccountTransactionRepository transactionRepository;
 
-    public BankAccountService(BankAccountRepository repository, AccountTransactionRepository transactionRepository) {
+    public BankAccountService(BankAccountRepository repository,
+                              AccountTransactionRepository transactionRepository) {
         this.repository = repository;
         this.transactionRepository = transactionRepository;
     }
@@ -59,7 +60,9 @@ public class BankAccountService {
                 .orElseThrow(() -> new IllegalArgumentException("Account not found: " + number));
 
         if (transactionRepository.findFirstByTransferRequestIdAndAccountNumberAndType(
-                requestId, number, TransactionType.DEPOSIT
+                requestId,
+                number,
+                TransactionType.DEPOSIT
         ).isPresent()) {
             return account;
         }
@@ -160,7 +163,7 @@ public class BankAccountService {
         * */
         Map<String, BankAccountEntity> lockedAccounts =
                 repository.findAllForUpdateOrderByNumber(orderedNumbers).stream()
-                        .collect(Collectors.toMap(BankAccountEntity::getNumber, account -> account));
+                        .collect(Collectors.toMap(BankAccountEntity::getNumber, acc -> acc));
 
         // lockedAccounts.get(fromNumber) daje zablokowane konto źródłowe
         BankAccountEntity from = lockedAccounts.get(fromNumber);
@@ -211,6 +214,8 @@ public class BankAccountService {
         return true;
     }
 
+    // Operacja tylko do odczytu — uruchamiana w transakcji read-only bez zapisu zmian.
+    // W tym miejscu użycie readOnly = true jest zasadne, bo find jedynie pobiera konto i niczego nie aktualizuje.
     @Transactional(readOnly = true)
     public BankAccountEntity find(String number) {
         return repository.findById(number)
