@@ -4,7 +4,7 @@ import spock.lang.Specification
 
 class ConcurrentVirtualThreadSpec extends Specification {
 
-    private final DepositRunnerInVirtualThreads runner = new DepositRunnerInVirtualThreads()
+    private final DepositRunnerUsingVirtualThreads runner = new DepositRunnerUsingVirtualThreads()
 
     def "safe account preserves all concurrent deposits"() {
         given:

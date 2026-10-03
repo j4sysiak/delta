@@ -24,7 +24,7 @@ public class UnsafeBankAccount implements DepositAccount {
          */
         Thread.yield();
 
-        // Ta klasa może tracić aktualizacje, ponieważ to operacja:
+        // Ta klasa może tracić aktualizacje, ponieważ ta operacja:
         // nie jest chroniona sekcją krytyczną synchronized,
         // która zapewnia, że w danym momencie tylko jeden wątek wykonuje deposit dla tego konta..
         balance = currentBalance.add(amount);

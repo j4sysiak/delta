@@ -22,7 +22,7 @@ Ten runner:
 6. zamyka executor przez try-with-resources.
 **/
 
-public class DepositRunnerInVirtualThreads {
+public class DepositRunnerUsingVirtualThreads {
 
     public BigDecimal runDeposits(
             DepositAccount account,
