@@ -5,6 +5,11 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
+/**
+ * Serwis ładujący dane konta równolegle z użyciem virtual threads.
+ * Uruchamia niezależnie pobranie salda, historii transakcji i podsumowania,
+ * a następnie składa je w jeden obiekt BankDataResult.
+ */
 public class VirtualThreadBankService {
 
     private final BankDataLoader loader;
@@ -13,6 +18,12 @@ public class VirtualThreadBankService {
         this.loader = loader;
     }
 
+    /**
+     * Ładuje wszystkie dane konta równolegle z użyciem virtual threads.
+     *
+     * @param accountNumber numer konta
+     * @return obiekt BankDataResult zawierający saldo, historię transakcji i podsumowanie
+     */
     public BankDataResult loadAll(String accountNumber) {
 
         /*
@@ -118,11 +129,18 @@ public class VirtualThreadBankService {
          * W praktyce dla newVirtualThreadPerTaskExecutor() println wykona się bardzo szybko po submit(...),
          * bo każde zadanie jest wykonywane w osobnym virtual thread.
          */
-        executor.submit(() -> {
-            System.out.println("Virtual thread started: " + Thread.currentThread().getName());
-        });
+         executor.submit(
+                 () -> System.out.println("Virtual thread started: " + Thread.currentThread().getName())
+         );
 
-        try (executor) {
+//        Oznacza to, że po wyjściu z tego bloku executor zostanie automatycznie zamknięty,
+//        nawet jeśli w środku poleci wyjątek.
+//        W Java 21 ExecutorService implementuje AutoCloseable, więc taki zapis jest poprawny.
+//        Dla newVirtualThreadPerTaskExecutor() zamknięcie executora oznacza zakończenie przyjmowania nowych
+//        zadań i uporządkowane domknięcie już uruchomionych.
+
+        try (executor) { // automatycznie zamyka ExecutorService po zakończeniu bloku
+                         // to try-with-resources dla ExecutorService
 
             /*
              * Zgłasza zadanie pobrania salda do executora virtual threads.
@@ -139,10 +157,11 @@ public class VirtualThreadBankService {
                     // a to może nastąpić w dowolnym momencie po submit, w zależności od dostępności wirtualnych wątków
                     // i harmonogramu executor
                     () -> loader.loadAccountBalance(accountNumber)
-
-
             );
 
+            // Future - czyli : „wynik będzie dostępny w przyszłości”
+            // Najlepiej myśleć o Future jako o obietnicy wyniku, a nie o samym „późniejszym wykonaniu”.
+            // To dlatego potem robisz: future.get();
             Future<String> history = executor.submit(
                     () -> loader.loadTransactionHistory(accountNumber)
             );
@@ -150,6 +169,31 @@ public class VirtualThreadBankService {
             Future<String> summary = executor.submit(
                     () -> loader.loadAccountSummary(accountNumber)
             );
+
+
+//      skad to sie bierze:
+//            <T> Future<T> submit(Callable<T> task);
+//
+//            @FunctionalInterface
+//            public interface Callable<V> {
+//                V call() throws Exception;
+//            }
+//
+//            prototyp call() wywolujemy bez parametrow i musi zwrócić String (najlepiej pasuje String)
+//            czyli w naszym przypadku, mogłoby być coś takiego:
+//
+//            // definicja interfejsu Callable<T> z metodą call() zwracającą T
+//            new Callable<String>() {
+//                @Override
+//                public String call() {
+//                    return "kaka";
+//                    // return loader.loadAccountBalance(accountNumber);
+//                }
+//            };
+//
+//            w zapisie lambda mamy więc:
+//            () -> loader.loadAccountBalance(accountNumber);
+
 
             return new BankDataResult(
                     getResult(balance),
@@ -163,12 +207,12 @@ public class VirtualThreadBankService {
     // zachowując status przerwania wątku
     private String getResult(Future<String> future) {
         try {
- /*
+  /*
   Zwróci wartość zwróconą wcześniej przez zadanie przekazane do executor.submit(...), np.:
-   - dla balance → wynik loader.loadAccountBalance(accountNumber):     zwróci zamokowane "PLN-1001: BALANCE: 1000.00 PLN"
-   - dla history → wynik loader.loadTransactionHistory(accountNumber): zwróci zamokowane "PLN-1001: TRANSACTION_HISTORY: [TEST_TX_1, TEST_TX_2, TEST_TX_3]"
-   - dla summary → wynik loader.loadAccountSummary(accountNumber):     zwróci zamokowane "PLN-1001: SUMMARY: +150.00 PLN"
- */
+   - dla balance → wynik loader.loadAccountBalance(accountNumber):     zwróci zamocowane "PLN-1001: BALANCE: 1000.00 PLN"
+   - dla history → wynik loader.loadTransactionHistory(accountNumber): zwróci zamocowane "PLN-1001: TRANSACTION_HISTORY: [TEST_TX_1, TEST_TX_2, TEST_TX_3]"
+   - dla summary → wynik loader.loadAccountSummary(accountNumber):     zwróci zamocowane "PLN-1001: SUMMARY: +150.00 PLN"
+  */
             return future.get();
         } catch (InterruptedException exception) {
             Thread.currentThread().interrupt();

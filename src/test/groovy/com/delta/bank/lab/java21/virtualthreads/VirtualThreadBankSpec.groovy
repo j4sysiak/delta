@@ -143,6 +143,12 @@ równoległych operacji oczekujących.
             requestExecutor.submit({ ->
                 service.loadAll("ACC-$index")
             } as Callable<BankDataResult>)
+            // lub krócej, bo Groovy potrafi rzutować Closure na Callable automatycznie:
+            // requestExecutor.submit({ -> service.loadAll("ACC-$index") })
+            // lub jeszcze krócej, bo Groovy potrafi rzutować Closure na Callable automatycznie:
+            // requestExecutor.submit({ service.loadAll("ACC-$index") })
+            // lub jeszcze krócej, bo Groovy potrafi rzutować Closure na Callable automatycznie:
+            // requestExecutor.submit(() -> service.loadAll("ACC-$index")) as Callable<BankDataResult>
         }
         /*  lub prościej
         def futures = (1..250).collect { index ->

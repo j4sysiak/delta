@@ -1,5 +1,7 @@
 package com.delta.bank.lab.java21.virtualthreads;
 
+// Kontrakt (interface) dla komponentów ładujących podstawowe informacje o koncie,
+// takie jak saldo, historia transakcji oraz podsumowanie konta.
 public interface BankDataLoader {
 
     default String loadAccountBalance(String accountNumber) {
@@ -11,6 +13,6 @@ public interface BankDataLoader {
     }
 
     default String loadAccountSummary(String accountNumber) {
-        return "SUMMARY: TEST_SUMMARY";
+        return "SUMMARY: 700.00 USD";
     }
 }
