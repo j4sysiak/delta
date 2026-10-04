@@ -11,6 +11,10 @@ java {
     }
 }
 
+tasks.withType(JavaCompile).configureEach {
+    options.compilerArgs += ['--enable-preview', '--release', '21']
+}
+
 repositories {
     mavenCentral()
 }
@@ -41,6 +45,8 @@ tasks.named('test') {
 }
 
 tasks.withType(Test).configureEach {
+    jvmArgs '--enable-preview'
+
     testLogging {
         events 'passed', 'failed', 'skipped'
     }

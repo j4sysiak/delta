@@ -10,6 +10,7 @@ import java.util.concurrent.Future;
  * Uruchamia niezależnie pobranie salda, historii transakcji i podsumowania,
  * a następnie składa je w jeden obiekt BankDataResult.
  */
+// Lab 3: ręcznie tworzysz executor, przechowujesz Future i zbierasz wyniki
 public class VirtualThreadBankService {
 
     private final BankDataLoader loader;
