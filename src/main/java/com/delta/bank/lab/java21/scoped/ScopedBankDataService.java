@@ -46,6 +46,7 @@ public class ScopedBankDataService {
                     history.get(),
                     summary.get()
             );
+
         } catch (InterruptedException exception) {
             Thread.currentThread().interrupt();
             throw new IllegalStateException(
