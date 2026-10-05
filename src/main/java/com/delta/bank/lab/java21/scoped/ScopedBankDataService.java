@@ -33,8 +33,52 @@ public class ScopedBankDataService {
     }
 
     private BankDataResult loadWithinContext(String accountNumber) {
-        try (var scope = new StructuredTaskScope.ShutdownOnFailure()) {
+
+        // Tworzy zakres współbieżnych zadań, który przerwie pozostałe operacje,
+        // jeśli którekolwiek z nich zakończy się błędem.
+        var scope = new StructuredTaskScope.ShutdownOnFailure();
+
+        // Uruchamia trzy niezależne operacje równolegle w ramach StructuredTaskScope.
+        // `join()` czeka na zakończenie wszystkich zadań, a `throwIfFailed()` przerywa
+        // dalsze przetwarzanie, jeśli którekolwiek zakończyło się błędem.
+        // Gdy wszystko powiedzie się poprawnie, wyniki są pobierane i składane
+        // do jednego obiektu `BankDataResult`.
+        try (scope) {
             var balance = scope.fork(() -> loader.loadBalance(accountNumber));
+
+            /*
+            public <U extends T> Subtask<U> fork(Callable<? extends U> task) {
+                Objects.requireNonNull(task, "task must not be null");
+                Subtask<U> subtask = new Subtask<>(task);
+                submit(subtask);
+                return subtask;
+
+
+                @FunctionalInterface
+                public interface Callable<V> {
+                   V call() throws Exception;
+                }
+
+                var balance = scope.fork( new java.util.concurrent.Callable<>() {
+                  @Override
+                  public String call() throws Exception {
+                    return loader.loadBalance(accountNumber);
+                  }
+                });
+
+
+                  public String call() throws Exception {
+                    return loader.loadBalance(accountNumber);
+                  }
+
+                  zapis  w formie lambda:
+                  () -> loader.loadBalance(accountNumber)
+
+
+                var balance = scope.fork(() -> loader.loadBalance(accountNumber))  // to jest lambda, która implementuje Callable<String>
+
+             */
+
             var history = scope.fork(() -> loader.loadHistory(accountNumber));
             var summary = scope.fork(() -> loader.loadSummary(accountNumber));
 
