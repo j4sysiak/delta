@@ -35,4 +35,7 @@ automatycznego sposobu przyspieszania kodu.
 4. Uruchom tylko spec danej części.
 5. Wykonaj eksperyment i wyjaśnij wynik własnymi słowami.
 
-Zaczynamy od `Readme_Lab14_1_stream_basics.md`.
+Materiały:
+
+- `Readme_Lab14_1_stream_basics.md`
+- `Readme_Lab14_2_filter_map_flatMap.md`
