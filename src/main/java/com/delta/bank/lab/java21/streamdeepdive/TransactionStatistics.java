@@ -144,7 +144,7 @@ accumulator(0, 10)  -> 10
 accumulator(10, 20) -> 30
 accumulator(30, 5)  -> 35
 
-        * */
+ */
     }
 
     public Optional<BigDecimal> totalAmountIfPresent(
