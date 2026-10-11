@@ -20,7 +20,7 @@ public class StreamBasics {
                 .toList();
     }
 
-    /*
+/*
     1.
     Stream<T> filter(Predicate<? super T> predicate);
 
@@ -75,5 +75,5 @@ public class StreamBasics {
 
     wersja lambda w filtrze juz na gotowo:  .map(transaction -> transaction.amount())
     wersja lambda w filtrze juz na gotowo:  .map(Transaction::amount)  // referencja do metody
-    */
+*/
 }
