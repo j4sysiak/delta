@@ -68,6 +68,7 @@ class TransactionCollectorsSpec extends Specification {
 
     def "maps transactions to amounts within each account group"() {
         when:
+        // Map<String, List<BigDecimal>> amounts
         def amounts = collectors.amountsByAccount(sampleTransactions())
 
         then:
@@ -83,6 +84,7 @@ class TransactionCollectorsSpec extends Specification {
 
     def "computes count and total for each account group"() {
         when:
+        // Map<String, TransactionGroupSummary> summaries
         def summaries = collectors.summariesByAccount(sampleTransactions())
 
         then:
