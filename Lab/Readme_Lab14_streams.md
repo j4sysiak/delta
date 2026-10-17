@@ -42,3 +42,4 @@ Materiały:
 - `Readme_Lab14_3_sort_distinct_search.md`
 - `Readme_Lab14_4_count_min_max_reduce_optional.md`
 - `Readme_Lab14_5_collectors.md`
+- `Readme_Lab14_6_pitfalls_parallel_streams.md`
