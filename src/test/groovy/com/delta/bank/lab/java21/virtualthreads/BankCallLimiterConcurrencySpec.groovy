@@ -9,7 +9,9 @@ import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 
 class BankCallLimiterConcurrencySpec extends Specification {
-//
+//    Dwa zadania zatrzymujemy wewnątrz limitera, żeby test mógł sprawdzić zajęte miejsca.
+//    Potem je zwalniamy i czekamy na zakończenie wszystkich czterech.
+
 //    Najprościej: test uruchamia **4 zadania**, ale limiter ma limit **2**. Sprawdza, czy naraz wejdą do bloku najwyżej dwa.
 //
 //    1. Każde zadanie próbuje wykonać `limiter.execute(...)`.
@@ -59,6 +61,7 @@ class BankCallLimiterConcurrencySpec extends Specification {
 
         when:
         def results = []
+        // Tworzy executor, który uruchamia każde przesłane zadanie na osobnym wirtualnym wątku.
         def executor = Executors.newVirtualThreadPerTaskExecutor()
         try {
                                          // test uruchamia **4 zadania**
@@ -66,12 +69,26 @@ class BankCallLimiterConcurrencySpec extends Specification {
                 // Każde zadanie jest uruchamiane na osobnym wirtualnym wątku;
 
                 // submit zwraca Future z jego wynikiem.
+                // Po submit(...) kod zadania może już działać równolegle z dalszym kodem testu.
+                // pierwsze wejdą zadania 1 i 2. Ich numerów test jednak nie gwarantuje
                 executor.submit({               // <T> Future<T> submit(Callable<T> task);
                     try {
 
+                        // Cztery zadania próbują wejść przez limiter do chronionej operacji.
                         // Limiter uruchamia blok dopiero po uzyskaniu wolnego miejsca w limicie.
+                        // zadanie 1 → ma permit → weszło
+                        // zadanie 2 → ma permit → weszło
+                        // zadanie 3 → czeka na permit
+                        // zadanie 4 → czeka na permit
                         return limiter.execute({
-                            // zwiększa licznik aktywnych wywołań
+
+                            // dwa wpuszczone zadania zgłaszają wejście
+                            //  Każde wykonuje:
+                            //   - activeCalls.incrementAndGet()   -> zadanie zwiększa licznik aktywnych wywołań
+                            //   - enteredFirstPair.countDown()    -> zadanie zmniejszając licznik `enteredFirstPair` o 1
+                            // Po obu wejściach:
+                            //   activeCalls = 2
+                            //   enteredFirstPair = 0
                             int current = activeCalls.incrementAndGet()
 
                             // aktualizuje dotychczasowe maksimum
@@ -80,10 +97,13 @@ class BankCallLimiterConcurrencySpec extends Specification {
                                     Math::max
                             )
 
-                            // Sygnalizuje, że zadanie weszło do bloku i zwiększyło licznik aktywnych wywołań.
+                            // Sygnalizuje, że zadanie weszło do bloku, zmniejszając licznik `enteredFirstPair` o 1.
                             enteredFirstPair.countDown()
 
                             try {
+                                // Następnie oba taski zatrzymują się tutaj:
+                                //   releaseFirstPair.await(...)
+                                // Nadal trzymają permits limitera. Nie zakończyły jeszcze operacji, więc zadania 3 i 4 nie mogą wejść.
                                 if (!releaseFirstPair.await(5, TimeUnit.SECONDS)) {
                                     throw new IllegalStateException(
                                             "test did not release first tasks"
@@ -101,15 +121,20 @@ class BankCallLimiterConcurrencySpec extends Specification {
                 } as Callable<String>)
             }
 
+            //  test może obejrzeć zatrzymaną sytuację
+            //  Wątek testu czekał tutaj.
             // Ta linia czeka maksymalnie 5 sekund, aż `enteredFirstPair` osiągnie zero
             //    — czyli aż dwa zadania wejdą do bloku limitera i wywołają `countDown()`.
             // Jeśli to się nie stanie na czas, `await()` zwróci `false`, a asercja obleje test.
             assert enteredFirstPair.await(5, TimeUnit.SECONDS)
+
+            // Gdy licznik osiągnął zero, rusza dalej i sprawdza:
+            // To właśnie po to zatrzymaliśmy zadania: żeby nie zdążyły zakończyć pracy przed sprawdzeniem licznika.
+            // assert activeCalls.get() == 2
             // Ta asercja sprawdza, że w chwili jej wykonania aktywne są dokładnie `limit` wywołania — tutaj dwa.
             // Potwierdza, że pierwsza para weszła do bloku limitera, zanim test ją zwolni;
             // sama nie sprawdza, czy limit nigdy nie został przekroczony (od tego jest `maximumActiveCalls`).
             assert activeCalls.get() == limit
-
 
             // Ta asercja potwierdza, że maksimum zmierzonych równoczesnych wywołań wyniosło dokładnie `limit`
             //  — test sprawdził więc, że limiter dopuścił dwa wywołania, ale nie więcej.
@@ -117,8 +142,13 @@ class BankCallLimiterConcurrencySpec extends Specification {
             assert maximumActiveCalls.get() == limit
 
             // Po sprawdzeniu liczników pozwala zadaniom kontynuować.
+            // Teraz zadania 1 i 2 mogą zakończyć operacje. Zmniejszają activeCalls, a limiter oddaje ich permits.
+            // Zadania 3 i 4 dostają wolne miejsca i również wykonują pracę.
+            // Ważne: latch pozostaje otwarty.
+            // Zadania 3 i 4 przejdą przez releaseFirstPair.await(...) bez dalszego czekania. Nie trzeba ponownie wywoływać countDown().
             releaseFirstPair.countDown()
 
+            // test czeka na wszystkie wyniki
             // Pobiera wyniki wszystkich zadań; na każde oczekiwanie na Future przypada maksymalnie 5 sekund.
             // Wyniki zachowują kolejność z listy `futures`, a nie kolejność zakończenia zadań.
             results = futures.collect { it.get(5, TimeUnit.SECONDS) }
@@ -128,6 +158,7 @@ class BankCallLimiterConcurrencySpec extends Specification {
             executor.close()
         }
 
+        // Dopiero po zakończeniu wszystkich zadań sprawdza stan końcowy:
         then:
         allCompleted.count == 0
         maximumActiveCalls.get() == limit
