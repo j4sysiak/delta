@@ -24,12 +24,11 @@ public class BankCallLimiter {
         this.semaphore = new Semaphore(maxConcurrentCalls);
     }
 
-    // T bedzie w pierwszym teście String, w drugim Integer, w trzecim Double, w czwartym DepositEvent
     public <T> T execute(Callable<T> operation) throws Exception {
-        Callable<String> callable = (Callable<String>) operation;
-        Callable<String> callableLambda = () -> "statement loaded";
 
         /*
+        Callable<String> callable = (Callable<String>) operation;
+        Callable<String> callableLambda = () -> "statement loaded";
 
         @FunctionalInterface
         public interface Callable<V> {
@@ -46,11 +45,11 @@ public class BankCallLimiter {
 
         Callable<String> callable = () -> {
             // Your code here
-            return "statement loaded";
+            return "statement loaded";  ------> to z testu BankCallLimiterSpec
         };
 
         lambda :
-        Callable<String> callablelambda = () -> "statement loaded";
+        Callable<String> callablelambda = () -> "statement loaded";  ------> to z testu BankCallLimiterSpec
         * */
 
 
@@ -59,10 +58,9 @@ public class BankCallLimiter {
         semaphore.acquire();
         try {
             /*
-             wywołanie callableLambda.call() zwróci warość parametru wejściowego tej głównej metody:  "statement loaded".
-             Sama linia tylko tworzy Callable; nie wykonuje go.
-             W execute() zwracany jest wynik operation.call(), a nie callableLambda, bo ta zmienna nie jest tam używana.
-            * */
+             * Wywołuje przekazaną operację i zwraca jej wynik.
+             * Zezwolenie semafora jest zwalniane w bloku finally, także gdy operacja zgłosi wyjątek.
+             */
             return operation.call();
         } finally {
             semaphore.release();
